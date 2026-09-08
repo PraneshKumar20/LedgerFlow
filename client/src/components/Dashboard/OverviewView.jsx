@@ -426,7 +426,7 @@ export default function OverviewView({
 
               {/* Category Pills */}
               <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-3 pt-4 mt-4 border-t border-slate-800/80">
-                {categoryData.slice(0, 5).map((cat, idx) => {
+                {categoryData.map((cat, idx) => {
                   const color = getCategoryStyle(cat.name).base
                   const percent = totalCategoryExpense > 0 ? ((cat.value / totalCategoryExpense) * 100).toFixed(0) : 0
                   const isHovered = activeCategoryIndex === idx
