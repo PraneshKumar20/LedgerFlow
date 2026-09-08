@@ -1,141 +1,348 @@
-# ⚡ Aetheria // Expense Tracker & Financial Intelligence
+<div align="center">
 
-An enterprise-grade, high-performance personal finance command center engineered with **React 19**, **Vite**, **Tailwind CSS**, **Framer Motion**, and a robust **Node.js/Express + MongoDB** backend.
+  <img src="client/public/ledgerflow-logo.png" alt="LedgerFlow Logo" width="120" style="border-radius: 24px; box-shadow: 0 10px 30px rgba(16, 185, 129, 0.2);" />
+
+  # ⚡ LedgerFlow
+  ### Enterprise-Grade Personal Wealth & Financial Intelligence Command Center
+
+  <p align="center">
+    A high-performance, cyber-fintech personal finance platform engineered with <strong>React 19</strong>, <strong>Vite</strong>, <strong>Tailwind CSS</strong>, <strong>Framer Motion</strong>, and a robust <strong>Node.js / Express + MongoDB</strong> backend.
+  </p>
+
+  <p align="center">
+    <a href="https://github.com/PraneshKumar20/Expense-Tracker/stargazers"><img src="https://img.shields.io/github/stars/PraneshKumar20/Expense-Tracker?style=for-the-badge&color=10b981&labelColor=0f172a" alt="Stars" /></a>
+    <a href="https://github.com/PraneshKumar20/Expense-Tracker/network/members"><img src="https://img.shields.io/github/forks/PraneshKumar20/Expense-Tracker?style=for-the-badge&color=6366f1&labelColor=0f172a" alt="Forks" /></a>
+    <a href="https://github.com/PraneshKumar20/Expense-Tracker/issues"><img src="https://img.shields.io/github/issues/PraneshKumar20/Expense-Tracker?style=for-the-badge&color=f43f5e&labelColor=0f172a" alt="Issues" /></a>
+    <a href="https://github.com/PraneshKumar20/Expense-Tracker/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-ISC-38bdf8?style=for-the-badge&labelColor=0f172a" alt="License" /></a>
+  </p>
+
+  <p align="center">
+    <img src="https://img.shields.io/badge/React_19-20232A?style=flat-square&logo=react&logoColor=61DAFB" alt="React 19" />
+    <img src="https://img.shields.io/badge/Vite-646CFF?style=flat-square&logo=vite&logoColor=white" alt="Vite" />
+    <img src="https://img.shields.io/badge/Node.js-339933?style=flat-square&logo=nodedotjs&logoColor=white" alt="Node.js" />
+    <img src="https://img.shields.io/badge/Express-000000?style=flat-square&logo=express&logoColor=white" alt="Express" />
+    <img src="https://img.shields.io/badge/MongoDB-47A248?style=flat-square&logo=mongodb&logoColor=white" alt="MongoDB" />
+    <img src="https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=flat-square&logo=tailwind-css&logoColor=white" alt="Tailwind CSS" />
+    <img src="https://img.shields.io/badge/Framer_Motion-black?style=flat-square&logo=framer&logoColor=blue" alt="Framer Motion" />
+    <img src="https://img.shields.io/badge/Recharts-22b5bf?style=flat-square&logo=chartdotjs&logoColor=white" alt="Recharts" />
+  </p>
+
+</div>
+
+---
+
+## 📑 Table of Contents
+
+- [Overview & Philosophy](#-overview--philosophy)
+- [Key Features](#-key-features)
+  - [Financial Command Center](#1-financial-command-center)
+  - [Natural Language Quick-Add Bar](#2-natural-language-quick-add-bar)
+  - [Interactive Visual Analytics](#3-interactive-visual-analytics)
+  - [Category Envelopes & Zero-Based Budgets](#4-category-envelopes--zero-based-budgets)
+  - [Subscription Radar & Recurring Obligations](#5-subscription-radar--recurring-obligations)
+  - [Savings Goals & Milestone Milestones](#6-savings-goals--milestone-milestones)
+  - [Enterprise Transaction Ledger & CSV Export](#7-enterprise-transaction-ledger--csv-export)
+  - [Multi-Currency Real-time Engine](#8-multi-currency-real-time-engine)
+  - [Adaptive Collapsible Sidebar & Mobile Navigation](#9-adaptive-collapsible-sidebar--mobile-navigation)
+- [System Architecture](#-system-architecture)
+- [Technology Stack](#-technology-stack)
+- [Project Directory Structure](#-project-directory-structure)
+- [Getting Started](#-getting-started)
+  - [Prerequisites](#prerequisites)
+  - [Installation](#installation)
+  - [Environment Variables](#environment-variables)
+  - [Running the Application](#running-the-application)
+- [API Reference](#-api-reference)
+- [Keyboard Shortcuts](#-keyboard-shortcuts)
+- [Contributing](#-contributing)
+- [License](#-license)
+
+---
+
+## 🌌 Overview & Philosophy
+
+**LedgerFlow** is crafted for individuals who want complete clarity, velocity, and command over their net worth and cashflow. Rather than static spreadsheets or sluggish accounting software, LedgerFlow treats personal wealth like an operations flight deck:
+
+- **Isolated Multi-User Security**: Complete data isolation across accounts via JWT / User ID tenancy.
+- **Glassmorphism 2.0 & Cyber Aesthetics**: Designed with ambient glowing meshes, radial gradient backdrops, frosted cards, and dynamic spring physics.
+- **Micro-Interactions**: Fluid number roll-up counters, reactive hover physics, canvas confetti celebrations, and contextual toasts.
 
 ---
 
 ## 🌟 Key Features
 
 ### 1. 🎛️ Financial Command Center
-- **Total Net Balance HUD**: Real-time cashflow evaluation with animated number roll-up counters.
-- **Income vs. Expense Ratio Bar**: Dynamic proportional split indicator showing real-time financial health.
-- **Barber-Pole Budget Usage**: Animated striped progress bar shifting from emerald to amber, with alert beacons when approaching or exceeding threshold limits.
-- **Quick Insights Deck**: Live savings rate calculation, average spend per transaction, and top category expenditure.
+- **Live Net Balance HUD**: Instantly aggregates liquid balance with smooth spring-physics roll-up counters.
+- **Financial Health Score**: Algorithmic financial health analysis calculating debt-to-income balance, savings rate, and spending velocity.
+- **Income vs. Expense Ratio**: Proportional dual-gradient status bar showing real-time burn rate.
+- **Spend Velocity & Insights**: Real-time savings rate calculation, average spend per transaction, and primary expense drivers.
 
-### 2. 🍩 Interactive Expense Breakdown
-- **Pop-up Scale Animation**: Hovering over any slice physically expands the sector with an outer ambient halo and neon accent border.
-- **Center Inspection HUD**: Dynamic spring-animated center display revealing the exact category, formatted amount, and percentage share.
-- **Synchronized Category Deck**: Two-way interactive pill deck below the chart—hovering a pill highlights the chart slice, and vice-versa.
+### 2. ⚡ Natural Language Quick-Add Bar
+- **Global Command HUD (`Ctrl + K`)**: Fire open the quick-add command line from anywhere in the application.
+- **Smart Syntax Parsing**: Type natural expressions such as:
+  ```text
+  Dinner 45 Food
+  Netflix 15.99 Entertainment recurring
+  Freelance 1200 Income salary
+  ```
+- Instant extraction of description, numerical amount, category token, and recurring flags.
 
-### 3. 📈 7-Day Cashflow Velocity
-- **SVG Gradient Charts**: Dual-bar cashflow velocity chart powered by Recharts with custom emerald (`#incomeGrad`) and crimson (`#expenseGrad`) linear gradients.
-- **Frosted Glass Tooltips**: Modern dark glassmorphic hover cards displaying transaction details with subtle backdrop blur.
+### 3. 📈 Interactive Visual Analytics
+- **SVG Cashflow Velocity Charts**: Dual-gradient income (`#incomeGrad`) vs expense (`#expenseGrad`) bars powered by Recharts.
+- **Category Donut with Outer Halo Physics**: Hovering any slice physically pops out the sector with ambient glow, while updating the synchronized central metrics HUD.
+- **Two-Way Pill Interaction**: Hovering category pills highlights corresponding chart segments in real time.
 
-### 4. 💱 Real-Time Multi-Currency Engine
-- Instant conversion between **USD ($)** and **INR (₹)**.
-- Integrates with live exchange rate APIs with automatic fallback calculations.
-- Smooth sliding spring pill toggle indicator powered by Framer Motion's `layoutId`.
+### 4. 🎯 Category Envelopes & Zero-Based Budgets
+- **User-Isolated Envelopes**: Allocate specific monthly limits for Food, Housing, Utilities, Subscriptions, and more.
+- **Barber-Pole Animated Progress**: Visual spend progress bar transitions through green, amber, and crimson states as thresholds are approached.
+- **Over-Budget Beacons**: Contextual alerts when spending crosses 80%, 90%, and 100% envelope capacities.
 
-### 5. 📑 Advanced Transaction Ledger
-- **Instant Search & Filter**: Real-time search across descriptions and categories.
-- **Multi-criteria Filtering**: Filter by transaction type (*All, Income, Expense*) and category (*Food, Travel, Bills, etc.*).
-- **Date Sorting**: Instant ascending/descending chronological toggle.
-- **CSV Data Export**: One-click ledger export to standard CSV format.
-- **Animated Row Lifecycle**: Staggered slide-in and pop-out row animations powered by `AnimatePresence`.
+### 5. 📡 Subscription Radar & Recurring Obligations
+- **Recurring Commitment Engine**: Tracks active software licenses, streaming services, and utility bills.
+- **Renewal Alert Horizon**: Dynamic calculation of upcoming billing dates and monthly/yearly committed burn.
+- **Quick Renewal Detection**: Automatically flags recurring items and offers one-click status audits.
 
-### 6. ✨ Cyber-Fintech Aesthetics
-- **Floating Aurora Mesh**: Ambient luminous orbs drifting and pulsing in deep sapphire, electric indigo, and emerald.
-- **Cyber-Coordinate Grid**: Subtle matrix background pattern with radial illumination.
-- **Glassmorphism 2.0**: High-refraction card borders, specular hover glimmers, and frosted glass dialogs.
+### 6. 🏆 Savings Goals & Milestone Tracker
+- **Visual Target Arcs**: Create custom wealth milestones (e.g., Emergency Fund, New Car, Real Estate Down Payment).
+- **Deposit Tracking**: Staggered deposit histories with projected completion dates.
+- **Victory Celebrations**: Micro-confetti fireworks powered by `canvas-confetti` upon reaching target amounts.
+
+### 7. 📑 Enterprise Transaction Ledger & CSV Export
+- **Instant Search**: Sub-millisecond filtering across descriptions and notes.
+- **Multi-Dimension Filters**: Filter by transaction type (*All, Income, Expense*), category, or date range.
+- **Chronological Sorting**: Instant ascending / descending sort toggles.
+- **One-Click CSV Export**: Clean RFC-4180 compliant CSV export for spreadsheet import or tax filings.
+
+### 8. 💱 Multi-Currency Real-time Engine
+- **Instant Currency Switcher**: Seamless conversion between **USD ($)** and **INR (₹)**.
+- **Sliding Spring Pill**: Framer Motion `layoutId` pill transition with dynamic rate calculations across all screens.
+
+### 9. 📱 Adaptive Collapsible Sidebar & Mobile Navigation
+- **Collapsible Sidebar**: Desktop sidebar toggles between expanded navigation and compact icon-rail mode with hover tooltips.
+- **Mobile Responsive Drawer**: Glassmorphic slide-out navigation with quick links and touch-friendly controls.
+
+---
+
+## 🏗️ System Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                       LEDGERFLOW UI                         │
+│   React 19 + Vite + Tailwind CSS + Framer Motion + Recharts  │
+└──────────────────────────────┬──────────────────────────────┘
+                               │ Axios REST API (JSON)
+                               ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    EXPRESS.JS BACKEND                       │
+│      Auth Controller | Expense Controller | User Tenancy    │
+└──────────────────────────────┬──────────────────────────────┘
+                               │ Mongoose ODM
+                               ▼
+┌─────────────────────────────────────────────────────────────┐
+│                     MONGODB DATABASE                        │
+│             Users Collection | Expenses Collection          │
+└─────────────────────────────────────────────────────────────┘
+```
 
 ---
 
 ## 🛠️ Technology Stack
 
-### Frontend
-- **Framework**: React 19 + Vite
-- **Styling**: Tailwind CSS + Custom CSS Keyframe Utilities
-- **Animations**: Framer Motion (`13.x`)
-- **Data Visualization**: Recharts (`3.x`)
-- **Icons**: Lucide React
-- **Primitives**: Radix UI (Dialog, Select, Slot)
-- **HTTP Client**: Axios
+### Client-Side (Frontend)
+| Technology | Version | Purpose |
+| :--- | :--- | :--- |
+| **React** | `19.2.0` | UI component architecture & concurrent rendering |
+| **Vite** | `7.2.4` | Lightning-fast build tooling and HMR dev environment |
+| **Tailwind CSS** | `3.4.19` | Atomic styling, custom design tokens, cyber-fintech theme |
+| **Framer Motion** | `13.1.0` | Spring physics, layout animations, and gesture triggers |
+| **Recharts** | `3.10.1` | Responsive SVG charts with custom linear gradients |
+| **Radix UI** | Latest | Accessible unstyled primitives (Dialog, Select, Popover) |
+| **Lucide React** | `1.31.0` | Modern fintech iconography |
+| **Canvas Confetti**| `1.9.4` | Celebratory milestone visual effects |
+| **Axios** | `1.13.2` | Promise-based HTTP client |
 
-### Backend
-- **Runtime**: Node.js
-- **Framework**: Express.js
-- **Database**: MongoDB (Mongoose ODM)
-- **Environment**: Dotenv + CORS
-- **Process Management**: Concurrently (root-level unified workflow)
+### Server-Side (Backend)
+| Technology | Version | Purpose |
+| :--- | :--- | :--- |
+| **Node.js** | `>= 18.0.0` | JavaScript runtime environment |
+| **Express.js** | `4.22.1` | RESTful API routing and middleware orchestration |
+| **MongoDB** | `>= 6.0` | High-performance document database |
+| **Mongoose** | `9.1.2` | Object Data Modeling (ODM) with strict schemas |
+| **Bcrypt.js** | `3.0.3` | Password hashing and cryptographic verification |
+| **Concurrently**| `10.0.5` | Unified root command orchestration |
+
+---
+
+## 📂 Project Directory Structure
+
+```
+ExpenseTracker/
+├── client/                             # React 19 Frontend
+│   ├── public/
+│   │   ├── ledgerflow-logo.png         # Official logo & favicon asset
+│   │   └── vite.svg
+│   ├── src/
+│   │   ├── api/                        # Axios HTTP client configuration
+│   │   ├── components/
+│   │   │   ├── Dashboard/              # Command Center Views
+│   │   │   │   ├── AnalyticsView.jsx   # In-depth spending analytics
+│   │   │   │   ├── BudgetsView.jsx     # Envelope budget manager
+│   │   │   │   ├── Dashboard.jsx       # Root layout coordinator
+│   │   │   │   ├── FinancialHealthCard.jsx # Health algorithm HUD
+│   │   │   │   ├── OverviewView.jsx    # Primary command center
+│   │   │   │   ├── QuickAddCommand.jsx # NLP Quick-Add Command Bar
+│   │   │   │   ├── SavingsGoalsModal.jsx # Milestones tracker
+│   │   │   │   ├── SubscriptionRadarModal.jsx # Recurring tracker
+│   │   │   │   ├── SubscriptionsView.jsx # Subscription dashboard
+│   │   │   │   ├── TransactionModal.jsx # Add / Edit transaction dialog
+│   │   │   │   ├── TransactionTable.jsx # Interactive data table
+│   │   │   │   └── TransactionsView.jsx # Dedicated ledger view
+│   │   │   ├── Layout/
+│   │   │   │   ├── AppHeader.jsx       # Header with sidebar trigger & currency
+│   │   │   │   ├── MobileNav.jsx       # Responsive drawer overlay
+│   │   │   │   └── Sidebar.jsx         # Collapsible desktop navigation
+│   │   │   ├── Login/                  # Authentication view
+│   │   │   ├── Signup/                 # Registration view
+│   │   │   └── ui/                     # Primitives (Buttons, Cards, Badges)
+│   │   ├── utils/
+│   │   │   ├── categoryColors.js       # Canonical category color palette
+│   │   │   └── quickAddParser.js       # Natural language parser
+│   │   ├── App.jsx                     # Route definitions & state
+│   │   ├── index.css                   # Glassmorphism & custom utility tokens
+│   │   └── main.jsx                    # Application entrypoint
+│   ├── index.html                      # HTML5 template with Geist & Manrope fonts
+│   ├── package.json
+│   ├── tailwind.config.js
+│   └── vite.config.js
+├── server/                             # Express.js Backend
+│   ├── config/
+│   │   └── db.js                       # Mongoose database connector
+│   ├── controllers/
+│   │   ├── authController.js           # User registration & login handlers
+│   │   └── expenseController.js        # User-isolated CRUD expense operations
+│   ├── models/
+│   │   ├── Expense.js                  # Expense schema with user tenancy
+│   │   └── User.js                     # User account & credential schema
+│   ├── routes/
+│   │   ├── authRoutes.js               # Auth API route definitions
+│   │   └── expenseRoutes.js            # Expense API route definitions
+│   ├── package.json
+│   └── server.js                       # Express app bootstrap & middleware
+├── package.json                        # Root orchestration package
+├── vercel.json                         # Vercel deployment configuration
+└── README.md                           # Documentation
+```
 
 ---
 
 ## 🚀 Getting Started
 
+Follow these steps to set up and run LedgerFlow on your local development machine.
+
 ### Prerequisites
-- [Node.js](https://nodejs.org/) (v18 or higher recommended)
-- [MongoDB](https://www.mongodb.com/try/download/community) installed and running on `localhost:27017`
 
-### 1. Clone the Repository
+Ensure you have the following installed:
+- [Node.js](https://nodejs.org/) (v18.0.0 or higher recommended)
+- [npm](https://www.npmjs.com/) (v9.0.0 or higher)
+- [MongoDB Community Server](https://www.mongodb.com/try/download/community) (running locally on port `27017` or a [MongoDB Atlas](https://www.mongodb.com/atlas) connection URI)
+
+### Installation
+
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/PraneshKumar20/Expense-Tracker.git
+   cd Expense-Tracker
+   ```
+
+2. **Install all dependencies (Root, Client & Server):**
+   ```bash
+   npm run install:all
+   ```
+
+### Environment Variables
+
+Create a `.env` file in the `server` directory:
+
 ```bash
-git clone https://github.com/PraneshKumar20/Expense-Tracker.git
-cd Expense-Tracker
-```
-
-### 2. Install Dependencies
-Install dependencies for both client and server from the root directory:
-```bash
-npm run install:all
-```
-
-### 3. Environment Configuration
-Ensure `server/.env` is configured:
-```env
+# Path: server/.env
 PORT=5000
 MONGO_URI=mongodb://127.0.0.1:27017/expense_tracker
 ```
 
-### 4. Run the Application
-Start both the Express API and Vite frontend dev server concurrently:
+*(Optional: If connecting to MongoDB Atlas, replace `MONGO_URI` with your connection string).*
+
+### Running the Application
+
+Launch both the Express backend API and the Vite frontend dev server with a single unified command:
+
 ```bash
 npm run dev
 ```
 
-- **Frontend**: [http://localhost:5173](http://localhost:5173)
-- **Backend API**: [http://localhost:5000](http://localhost:5000)
+Once started:
+- 🌐 **Frontend**: [http://localhost:5173](http://localhost:5173)
+- ⚙️ **Backend API**: [http://localhost:5000](http://localhost:5000)
 
----
+#### Individual Service Scripts:
+```bash
+# Start only the client
+npm run dev:client
 
-## 📂 Project Architecture
+# Start only the backend (with nodemon auto-restart)
+npm run dev:server
 
-```
-ExpenseTracker/
-├── client/                     # Vite React Frontend
-│   ├── src/
-│   │   ├── api/                # Axios instance & endpoints
-│   │   ├── components/
-│   │   │   ├── Dashboard/      # Command Center, Charts & Ledger
-│   │   │   ├── Login/          # Authentication View
-│   │   │   ├── Signup/         # Registration View
-│   │   │   └── ui/             # Reusable UI primitives (Buttons, Cards, AnimatedCounter)
-│   │   ├── App.jsx             # Main application layout
-│   │   ├── index.css           # Design tokens, keyframes & glassmorphism
-│   │   └── main.jsx            # React root & routing
-│   ├── package.json
-│   └── vite.config.js
-├── server/                     # Express & MongoDB Backend
-│   ├── config/                 # Database connection
-│   ├── controllers/            # Request handlers
-│   ├── models/                 # Mongoose schemas (Expense, User)
-│   ├── routes/                 # API route definitions
-│   ├── package.json
-│   └── server.js
-├── package.json                # Root orchestration scripts
-└── README.md
+# Build the client for production
+npm run build
 ```
 
 ---
 
-## 📜 Available NPM Scripts
+## 🔌 API Reference
 
-| Command | Description |
-| :--- | :--- |
-| `npm run dev` | Runs both backend and frontend concurrently |
-| `npm run dev:client` | Starts only the Vite frontend dev server |
-| `npm run dev:server` | Starts only the Express backend server with nodemon |
-| `npm run install:all` | Installs dependencies for both client and server |
+### Authentication (`/api/auth`)
+| Method | Endpoint | Description | Payload |
+| :--- | :--- | :--- | :--- |
+| `POST` | `/api/auth/register` | Create a new user account | `{ username, email, password }` |
+| `POST` | `/api/auth/login` | Authenticate existing user | `{ email, password }` |
+
+### Expenses (`/api/expenses`)
+| Method | Endpoint | Description | Payload |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/api/expenses?userId={id}` | Retrieve all transactions for user | None |
+| `POST` | `/api/expenses` | Create a new transaction | `{ title, amount, category, type, date, isRecurring, userId }` |
+| `PUT` | `/api/expenses/:id` | Update an existing transaction | `{ title?, amount?, category?, type?, date? }` |
+| `DELETE` | `/api/expenses/:id` | Remove a transaction | None |
+
+---
+
+## ⌨️ Keyboard Shortcuts
+
+| Shortcut | Action | Scope |
+| :--- | :--- | :--- |
+| `Ctrl + K` / `Cmd + K` | Open Natural Language Quick-Add HUD | Global |
+| `Esc` | Close modal / Dismiss command HUD | Any Modal / Drawer |
+| `Enter` | Submit Quick-Add entry | Quick-Add Input |
+
+---
+
+## 🤝 Contributing
+
+Contributions, issues, and feature requests are welcome!
+
+1. Fork the Project
+2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your Changes (`git commit -m 'feat: Add some AmazingFeature'`)
+4. Push to the Branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
 ---
 
 ## 📄 License
-This project is licensed under the ISC License.
+
+This project is licensed under the [ISC License](LICENSE).
+
+---
+
+<div align="center">
+  Crafted with precision by <a href="https://github.com/PraneshKumar20"><strong>Pranesh Kumar</strong></a>
+</div>
