@@ -4,7 +4,9 @@ import {
   Command, 
   Plus, 
   ChevronDown, 
-  LogOut 
+  LogOut,
+  PanelLeftClose,
+  PanelLeftOpen
 } from "lucide-react"
 
 export default function AppHeader({
@@ -12,7 +14,9 @@ export default function AppHeader({
   onOpenAddModal,
   onOpenQuickAdd,
   currentUser,
-  onLogout
+  onLogout,
+  isSidebarCollapsed,
+  onToggleSidebar
 }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
 
@@ -45,6 +49,17 @@ export default function AppHeader({
     <header className="hidden lg:flex items-center justify-between pb-8 border-b border-slate-800 mb-8">
       <div>
         <div className="flex items-center gap-3">
+          <button
+            onClick={onToggleSidebar}
+            className="p-2 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-slate-700 text-slate-400 hover:text-white transition-colors cursor-pointer"
+            title={isSidebarCollapsed ? "Expand sidebar (Ctrl+B)" : "Collapse sidebar (Ctrl+B)"}
+          >
+            {isSidebarCollapsed ? (
+              <PanelLeftOpen className="h-4 w-4 text-blue-400" />
+            ) : (
+              <PanelLeftClose className="h-4 w-4" />
+            )}
+          </button>
           <h1 className="text-[32px] sm:text-[36px] font-bold text-white tracking-[-0.035em] leading-tight">
             {current.title}
           </h1>
@@ -53,7 +68,7 @@ export default function AppHeader({
             LIVE
           </div>
         </div>
-        <p className="text-[13px] sm:text-sm text-slate-400 mt-2 font-medium leading-relaxed">{current.subtitle}</p>
+        <p className="text-[13px] sm:text-sm text-slate-400 mt-2 font-medium leading-relaxed pl-11">{current.subtitle}</p>
       </div>
 
       <div className="flex items-center gap-2.5">

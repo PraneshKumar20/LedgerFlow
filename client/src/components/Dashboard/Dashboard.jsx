@@ -59,6 +59,9 @@ export default function Dashboard() {
     return { name: "Personal Ledger", email: "guest@ledgerflow.app", isGuest: true }
   })
 
+  const isGuest = Boolean(currentUser?.isGuest)
+  const userStorageKey = currentUser?.email ? currentUser.email.toLowerCase().replace(/[^a-z0-9]/g, '_') : 'guest'
+
   const handleLogout = () => {
     localStorage.removeItem("user")
     addToast({ title: "Signed Out", message: "You have been logged out.", type: "info" })
@@ -69,22 +72,26 @@ export default function Dashboard() {
   const [expenses, setExpenses] = useState(() => {
     if (typeof window !== 'undefined') {
       try {
-        const saved = localStorage.getItem("expenses")
+        const key = currentUser?.email ? currentUser.email.toLowerCase().replace(/[^a-z0-9]/g, '_') : 'guest'
+        const saved = localStorage.getItem(`expenses_${key}`)
         if (saved) {
           const parsed = JSON.parse(saved)
-          if (Array.isArray(parsed) && parsed.length > 0) return parsed
+          if (Array.isArray(parsed)) return parsed
         }
       } catch (e) {}
     }
-    return DEMO_TRANSACTIONS.map((t, index) => {
-      const date = new Date()
-      date.setDate(date.getDate() - (index * 2))
-      return {
-        ...t,
-        _id: `initial-${index}`,
-        date: date.toISOString()
-      }
-    })
+    if (isGuest) {
+      return DEMO_TRANSACTIONS.map((t, index) => {
+        const date = new Date()
+        date.setDate(date.getDate() - (index * 2))
+        return {
+          ...t,
+          _id: `initial-${index}`,
+          date: date.toISOString()
+        }
+      })
+    }
+    return []
   })
 
   // Modal visibility states
@@ -96,48 +103,64 @@ export default function Dashboard() {
   const [editingTransaction, setEditingTransaction] = useState(null)
   const [activeCategoryIndex, setActiveCategoryIndex] = useState(null)
 
-  // Savings Goals & Milestones State (Persisted)
+  // Savings Goals & Milestones State (Persisted per user)
   const [savingsGoals, setSavingsGoals] = useState(() => {
     if (typeof window !== 'undefined') {
       try {
-        const saved = localStorage.getItem("savings_goals")
+        const key = currentUser?.email ? currentUser.email.toLowerCase().replace(/[^a-z0-9]/g, '_') : 'guest'
+        const saved = localStorage.getItem(`savings_goals_${key}`)
         if (saved) {
           const parsed = JSON.parse(saved)
-          if (Array.isArray(parsed) && parsed.length > 0) return parsed
+          if (Array.isArray(parsed)) return parsed
         }
       } catch (e) {}
     }
-    return [
-      { id: "goal-1", title: "Emergency Reserve", targetAmount: 10000, currentAmount: 6800, emoji: "🛡️", colorIndex: 0, targetDate: "2026-12-31" },
-      { id: "goal-2", title: "Tokyo & Kyoto Vacation", targetAmount: 3500, currentAmount: 2450, emoji: "✈️", colorIndex: 1, targetDate: "2026-10-15" },
-      { id: "goal-3", title: "M4 Max MacBook Pro", targetAmount: 2200, currentAmount: 1650, emoji: "💻", colorIndex: 3, targetDate: "2026-11-20" }
-    ]
+    if (isGuest) {
+      return [
+        { id: "goal-1", title: "Emergency Reserve", targetAmount: 10000, currentAmount: 6800, emoji: "🛡️", colorIndex: 0, targetDate: "2026-12-31" },
+        { id: "goal-2", title: "Tokyo & Kyoto Vacation", targetAmount: 3500, currentAmount: 2450, emoji: "✈️", colorIndex: 1, targetDate: "2026-10-15" },
+        { id: "goal-3", title: "M4 Max MacBook Pro", targetAmount: 2200, currentAmount: 1650, emoji: "💻", colorIndex: 3, targetDate: "2026-11-20" }
+      ]
+    }
+    return []
   })
 
   const handleUpdateSavingsGoals = (updated) => {
     setSavingsGoals(updated)
     try {
-      localStorage.setItem("savings_goals", JSON.stringify(updated))
+      localStorage.setItem(`savings_goals_${userStorageKey}`, JSON.stringify(updated))
       addToast({ title: "Goals Updated", message: "Savings progress saved.", type: "success" })
     } catch (e) {}
   }
   
-  // Category Budget Envelopes State (Persisted)
+  // Category Budget Envelopes State (Persisted per user)
   const [categoryBudgets, setCategoryBudgets] = useState(() => {
     if (typeof window !== 'undefined') {
       try {
-        const saved = localStorage.getItem("category_budgets")
+        const key = currentUser?.email ? currentUser.email.toLowerCase().replace(/[^a-z0-9]/g, '_') : 'guest'
+        const saved = localStorage.getItem(`category_budgets_${key}`)
         if (saved) return JSON.parse(saved)
       } catch (e) {}
     }
+    if (isGuest) {
+      return {
+        Food: 450,
+        Travel: 250,
+        Bills: 350,
+        Subscriptions: 100,
+        Entertainment: 150,
+        Shopping: 200,
+        Other: 150
+      }
+    }
     return {
-      Food: 450,
-      Travel: 250,
-      Bills: 350,
-      Subscriptions: 100,
-      Entertainment: 150,
-      Shopping: 200,
-      Other: 150
+      Food: 0,
+      Travel: 0,
+      Bills: 0,
+      Subscriptions: 0,
+      Entertainment: 0,
+      Shopping: 0,
+      Other: 0
     }
   })
 
@@ -145,15 +168,94 @@ export default function Dashboard() {
     setCategoryBudgets(prev => {
       const next = { ...prev, [category]: limit }
       try {
-        localStorage.setItem("category_budgets", JSON.stringify(next))
+        localStorage.setItem(`category_budgets_${userStorageKey}`, JSON.stringify(next))
         addToast({ title: "Budget Saved", message: `${category} limit set to ${limit}`, type: "success" })
       } catch (e) {}
       return next
     })
   }
 
-  // Budget limit & Currency state (INR as default)
-  const [budgetLimit, setBudgetLimit] = useState(3000)
+  // Budget limit & Currency state (INR as default, persisted per user)
+  const [budgetLimit, setBudgetLimit] = useState(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const key = currentUser?.email ? currentUser.email.toLowerCase().replace(/[^a-z0-9]/g, '_') : 'guest'
+        const saved = localStorage.getItem(`budget_limit_${key}`)
+        if (saved !== null) return Number(saved) || 0
+      } catch (e) {}
+    }
+    return isGuest ? 3000 : 0
+  })
+
+  const handleUpdateBudgetLimit = (limit) => {
+    const num = Number(limit) || 0
+    setBudgetLimit(num)
+    try {
+      localStorage.setItem(`budget_limit_${userStorageKey}`, String(num))
+    } catch (e) {}
+  }
+
+  // Synchronize scoped state if session user changes
+  useEffect(() => {
+    const key = currentUser?.email ? currentUser.email.toLowerCase().replace(/[^a-z0-9]/g, '_') : 'guest'
+    const guest = Boolean(currentUser?.isGuest)
+
+    try {
+      const savedGoals = localStorage.getItem(`savings_goals_${key}`)
+      if (savedGoals) {
+        setSavingsGoals(JSON.parse(savedGoals))
+      } else if (guest) {
+        setSavingsGoals([
+          { id: "goal-1", title: "Emergency Reserve", targetAmount: 10000, currentAmount: 6800, emoji: "🛡️", colorIndex: 0, targetDate: "2026-12-31" },
+          { id: "goal-2", title: "Tokyo & Kyoto Vacation", targetAmount: 3500, currentAmount: 2450, emoji: "✈️", colorIndex: 1, targetDate: "2026-10-15" },
+          { id: "goal-3", title: "M4 Max MacBook Pro", targetAmount: 2200, currentAmount: 1650, emoji: "💻", colorIndex: 3, targetDate: "2026-11-20" }
+        ])
+      } else {
+        setSavingsGoals([])
+      }
+    } catch (e) {}
+
+    try {
+      const savedLimit = localStorage.getItem(`budget_limit_${key}`)
+      if (savedLimit !== null) {
+        setBudgetLimit(Number(savedLimit) || 0)
+      } else if (guest) {
+        setBudgetLimit(3000)
+      } else {
+        setBudgetLimit(0)
+      }
+    } catch (e) {}
+
+    try {
+      const savedBudgets = localStorage.getItem(`category_budgets_${key}`)
+      if (savedBudgets) {
+        setCategoryBudgets(JSON.parse(savedBudgets))
+      } else if (guest) {
+        setCategoryBudgets({
+          Food: 450,
+          Travel: 250,
+          Bills: 350,
+          Subscriptions: 100,
+          Entertainment: 150,
+          Shopping: 200,
+          Other: 150
+        })
+      } else {
+        setCategoryBudgets({
+          Food: 0,
+          Travel: 0,
+          Bills: 0,
+          Subscriptions: 0,
+          Entertainment: 0,
+          Shopping: 0,
+          Other: 0
+        })
+      }
+    } catch (e) {}
+
+    fetchExpenses()
+  }, [currentUser?.email, currentUser?.isGuest])
+
   const [currency, setCurrency] = useState(() => {
     if (typeof window !== 'undefined') {
       try {
@@ -168,12 +270,34 @@ export default function Dashboard() {
   const currencySymbols = { USD: "$", INR: "₹" }
   const currSym = currencySymbols[currency]
 
-  // Global Keyboard Shortcut: Ctrl+K / Cmd+K
+  // Sidebar collapse state (Persisted in localStorage)
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        return localStorage.getItem("sidebar_collapsed") === "true"
+      } catch (e) {}
+    }
+    return false
+  })
+
+  const toggleSidebar = () => {
+    setIsSidebarCollapsed(prev => {
+      const next = !prev
+      try { localStorage.setItem("sidebar_collapsed", String(next)) } catch (e) {}
+      return next
+    })
+  }
+
+  // Global Keyboard Shortcuts: Ctrl+K / Cmd+K (Quick Add), Ctrl+B / Cmd+B (Toggle Sidebar)
   useEffect(() => {
     const handleKeyDown = (e) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault()
         setIsQuickAddOpen(prev => !prev)
+      }
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'b') {
+        e.preventDefault()
+        toggleSidebar()
       }
     }
     window.addEventListener('keydown', handleKeyDown)
@@ -199,7 +323,9 @@ export default function Dashboard() {
 
   const fetchExpenses = async () => {
     try {
-      const response = await axios.get("/expenses")
+      const userId = currentUser?.id || currentUser?._id
+      const url = userId ? `/expenses?userId=${userId}` : "/expenses"
+      const response = await axios.get(url)
       if (Array.isArray(response.data)) {
         setExpenses(response.data)
         updateLocalStorage(response.data)
@@ -208,23 +334,27 @@ export default function Dashboard() {
       throw new Error("API response is not an array")
     } catch (error) {
       console.warn("Using offline / local expenses:", error.message)
-      const localData = localStorage.getItem("expenses")
+      const localData = localStorage.getItem(`expenses_${userStorageKey}`)
       if (localData) {
         try {
           const parsed = JSON.parse(localData)
-          if (Array.isArray(parsed) && parsed.length > 0) {
+          if (Array.isArray(parsed)) {
             setExpenses(parsed)
             return
           }
         } catch (e) {}
       }
-      seedDemoData()
+      if (isGuest) {
+        seedDemoData()
+      } else {
+        setExpenses([])
+      }
     }
   }
 
   const updateLocalStorage = (updatedExpenses) => {
     if (Array.isArray(updatedExpenses)) {
-      localStorage.setItem("expenses", JSON.stringify(updatedExpenses))
+      localStorage.setItem(`expenses_${userStorageKey}`, JSON.stringify(updatedExpenses))
     }
   }
 
@@ -240,8 +370,10 @@ export default function Dashboard() {
   }, [expenses, multiplier])
 
   const handleSaveTransaction = async (transaction) => {
+    const userId = currentUser?.id || currentUser?._id
     const baseTransaction = {
       ...transaction,
+      userId: userId || null,
       amount: transaction.amount / multiplier
     }
 
@@ -454,6 +586,8 @@ export default function Dashboard() {
         currentUser={currentUser}
         onLogout={handleLogout}
         onSaveTransaction={handleSaveTransaction}
+        isCollapsed={isSidebarCollapsed}
+        onToggleCollapse={toggleSidebar}
       />
 
       {/* Main Content Area */}
@@ -472,6 +606,7 @@ export default function Dashboard() {
           }}
           currentUser={currentUser}
           onLogout={handleLogout}
+          onSeedDemo={seedDemoData}
         />
 
         <main className="flex-1 px-4 sm:px-6 lg:px-12 pt-8 lg:pt-10 max-w-[1440px] w-full mx-auto">
@@ -482,6 +617,8 @@ export default function Dashboard() {
             onOpenQuickAdd={() => setIsQuickAddOpen(true)}
             currentUser={currentUser}
             onLogout={handleLogout}
+            isSidebarCollapsed={isSidebarCollapsed}
+            onToggleSidebar={toggleSidebar}
             currency={currency}
             setCurrency={(c) => {
               setCurrency(c)
@@ -510,7 +647,7 @@ export default function Dashboard() {
                   incomeShare={incomeShare}
                   budgetPercent={budgetPercent}
                   budgetLimit={budgetLimit}
-                  setBudgetLimit={setBudgetLimit}
+                  setBudgetLimit={handleUpdateBudgetLimit}
                   trendData={trendData}
                   categoryData={categoryData}
                   totalCategoryExpense={totalCategoryExpense}
@@ -563,7 +700,7 @@ export default function Dashboard() {
               {activeTab === "budgets" && (
                 <BudgetsView
                   budgetLimit={budgetLimit}
-                  setBudgetLimit={setBudgetLimit}
+                  setBudgetLimit={handleUpdateBudgetLimit}
                   budgetPercent={budgetPercent}
                   totalExpense={totalExpense}
                   currSym={currSym}

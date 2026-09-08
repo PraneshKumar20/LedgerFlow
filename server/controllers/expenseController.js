@@ -3,13 +3,14 @@ const Expense = require("../models/Expense");
 //POST
 const createExpense = async (req, res) => {
   try {
-    const { title, amount, category, date, type, isRecurring } = req.body;
+    const { title, amount, category, date, type, isRecurring, userId } = req.body;
 
     if (!title || !amount || !category || !date) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
     const expense = await Expense.create({
+      userId: userId || null,
       title,
       amount,
       category,
@@ -25,14 +26,19 @@ const createExpense = async (req, res) => {
 };
 
 //GET
-const getExpenses = async(req,res) => {
-  try{
-    const expenses = await Expense.find().sort({date: -1});
+const getExpenses = async (req, res) => {
+  try {
+    const { userId } = req.query;
+    const filter = {};
+    if (userId) {
+      filter.userId = userId;
+    }
+    const expenses = await Expense.find(filter).sort({ date: -1 });
     res.status(200).json(expenses);
-  } catch(error){
-    res.status(500).json({message: error.message});
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
-}
+};
 
 //GET - by ID
 const getExpenseById = async(req,res) => {
@@ -81,7 +87,7 @@ const deleteExpense = async(req,res) => {
     await expense.deleteOne();
     res.status(200).json({message: "Expense deleted successfully!"});
   } catch(error){
-    res.status(500).json({message: "Invalid Epense ID"});
+    res.status(500).json({message: "Invalid Expense ID"});
   }
 }
 

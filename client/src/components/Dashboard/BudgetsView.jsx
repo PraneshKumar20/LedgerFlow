@@ -101,12 +101,13 @@ export default function BudgetsView({
               <span className="text-xs font-semibold text-slate-400 font-mono-nums">{currSym}</span>
               <input
                 type="text"
-                value={formatNumber(Math.round(budgetLimit * multiplier), currSym, 0, 0)}
+                placeholder="0"
+                value={budgetLimit > 0 ? formatNumber(Math.round(budgetLimit * multiplier), currSym, 0, 0) : ""}
                 onChange={(e) => {
                   const val = e.target.value.replace(/[^0-9]/g, '')
                   setBudgetLimit((Number(val) || 0) / multiplier)
                 }}
-                className="w-20 bg-transparent text-xs font-mono-nums font-semibold text-white text-right outline-none"
+                className="w-20 bg-transparent text-xs font-mono-nums font-semibold text-white text-right outline-none placeholder:text-slate-600"
               />
             </div>
             <button
@@ -130,18 +131,22 @@ export default function BudgetsView({
 
           <div>
             <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-[0.06em]">Remaining Buffer</span>
-            <p className={`text-[20px] sm:text-[26px] font-semibold font-mono-nums mt-1 leading-tight ${(budgetLimit * multiplier - totalExpense) >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
-              <AnimatedCounter value={Math.max(0, (budgetLimit * multiplier) - totalExpense)} prefix={currSym} />
+            <p className={`text-[20px] sm:text-[26px] font-semibold font-mono-nums mt-1 leading-tight ${
+              budgetLimit <= 0
+                ? "text-slate-400"
+                : (budgetLimit * multiplier - totalExpense) >= 0 ? 'text-emerald-400' : 'text-rose-400'
+            }`}>
+              {budgetLimit <= 0 ? "—" : <AnimatedCounter value={Math.max(0, (budgetLimit * multiplier) - totalExpense)} prefix={currSym} />}
             </p>
-            <p className="text-xs text-slate-400 font-normal mt-0.5">Remaining before limit</p>
+            <p className="text-xs text-slate-400 font-normal mt-0.5">{budgetLimit <= 0 ? "No limit configured" : "Remaining before limit"}</p>
           </div>
 
           <div>
             <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-[0.06em]">Quota Utilized</span>
             <p className="text-[20px] sm:text-[26px] font-semibold text-slate-200 font-mono-nums mt-1 leading-tight">
-              <AnimatedCounter value={budgetPercent} decimals={0} suffix="%" />
+              {budgetLimit <= 0 ? "0%" : <AnimatedCounter value={budgetPercent} decimals={0} suffix="%" />}
             </p>
-            <p className="text-xs text-slate-400 font-normal mt-0.5">Of monthly limit</p>
+            <p className="text-xs text-slate-400 font-normal mt-0.5">{budgetLimit <= 0 ? "Of monthly allowance" : "Of monthly limit"}</p>
           </div>
         </div>
 
@@ -291,76 +296,97 @@ export default function BudgetsView({
           </button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
-          {savingsGoals.map((goal) => {
-            const target = (goal.targetAmount || 1) * multiplier
-            const current = (goal.currentAmount || 0) * multiplier
-            const percent = Math.min((current / target) * 100, 100)
-            const isCompleted = current >= target
+        {savingsGoals.length === 0 ? (
+          <div className="text-center py-10 px-4 rounded-xl bg-slate-900/30 border border-dashed border-slate-800 space-y-3">
+            <div className="p-3 rounded-xl bg-slate-800/80 border border-slate-700/60 inline-flex text-slate-400">
+              <Target className="h-6 w-6 text-emerald-400" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-white">No savings goals created yet</p>
+              <p className="text-xs text-slate-400 max-w-sm mx-auto mt-1">
+                Define savings targets for upcoming trips, emergency funds, or gadgets and track them in real time.
+              </p>
+            </div>
+            <button
+              onClick={() => setIsSavingsGoalsOpen(true)}
+              className="mt-2 px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold transition-colors cursor-pointer inline-flex items-center gap-1.5"
+            >
+              <Plus className="h-3.5 w-3.5" />
+              <span>Create Your First Goal</span>
+            </button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
+            {savingsGoals.map((goal) => {
+              const target = (goal.targetAmount || 1) * multiplier
+              const current = (goal.currentAmount || 0) * multiplier
+              const percent = Math.min((current / target) * 100, 100)
+              const isCompleted = current >= target
 
-            return (
-              <div
-                key={goal.id}
-                className="p-4 sm:p-5 rounded-lg bg-slate-900/40 border border-slate-800/60 space-y-3"
-              >
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-3">
-                    <span className="text-xl p-2 rounded-lg bg-slate-800/80 border border-slate-700/60">
-                      {goal.emoji || "🎯"}
-                    </span>
-                    <div>
-                      <h3 className="text-sm font-semibold text-white leading-snug">{goal.title}</h3>
-                      {goal.targetDate && (
-                        <p className="text-[10px] text-slate-500 mt-0.5 flex items-center gap-1">
-                          <Calendar className="h-3 w-3" />
-                          <span>{goal.targetDate}</span>
-                        </p>
-                      )}
+              return (
+                <div
+                  key={goal.id}
+                  className="p-4 sm:p-5 rounded-lg bg-slate-900/40 border border-slate-800/60 space-y-3"
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-3">
+                      <span className="text-xl p-2 rounded-lg bg-slate-800/80 border border-slate-700/60">
+                        {goal.emoji || "🎯"}
+                      </span>
+                      <div>
+                        <h3 className="text-sm font-semibold text-white leading-snug">{goal.title}</h3>
+                        {goal.targetDate && (
+                          <p className="text-[10px] text-slate-500 mt-0.5 flex items-center gap-1">
+                            <Calendar className="h-3 w-3" />
+                            <span>{goal.targetDate}</span>
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    {isCompleted && (
+                      <span className="px-1.5 py-0.2 rounded text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                        Completed
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-baseline">
+                      <span className="text-[17px] font-semibold text-white font-mono-nums leading-tight">
+                        {currSym}{formatNumber(current, currSym, 0, 0)}
+                      </span>
+                      <span className="text-[11px] text-slate-500 font-mono-nums">
+                        of {currSym}{formatNumber(target, currSym, 0, 0)} · {percent.toFixed(0)}%
+                      </span>
+                    </div>
+
+                    <div className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
+                      <div
+                        style={{ width: `${percent}%` }}
+                        className={`h-full rounded-full transition-all duration-300 ${isCompleted ? 'bg-emerald-400' : 'bg-indigo-500'}`}
+                      />
                     </div>
                   </div>
 
-                  {isCompleted && (
-                    <span className="px-1.5 py-0.2 rounded text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                      Completed
+                  <div className="flex items-center justify-between pt-3 mt-2 border-t border-slate-800/40 text-[11px]">
+                    <span className="text-slate-400 font-mono">
+                      {currSym}{formatNumber(Math.max(0, target - current), currSym, 0, 0)} to target
                     </span>
-                  )}
-                </div>
-
-                <div className="space-y-2">
-                  <div className="flex justify-between items-baseline">
-                    <span className="text-[17px] font-semibold text-white font-mono-nums leading-tight">
-                      {currSym}{formatNumber(current, currSym, 0, 0)}
-                    </span>
-                    <span className="text-[11px] text-slate-500 font-mono-nums">
-                      of {currSym}{formatNumber(target, currSym, 0, 0)} · {percent.toFixed(0)}%
-                    </span>
-                  </div>
-
-                  <div className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
-                    <div
-                      style={{ width: `${percent}%` }}
-                      className={`h-full rounded-full transition-all duration-300 ${isCompleted ? 'bg-emerald-400' : 'bg-indigo-500'}`}
-                    />
+                    {!isCompleted && (
+                      <button
+                        onClick={() => handleQuickDeposit(goal.id, 100)}
+                        className="px-2 py-0.5 text-[10px] font-medium bg-slate-800 hover:bg-slate-750 text-slate-200 border border-slate-700 rounded transition-colors cursor-pointer"
+                      >
+                        + Deposit {currSym}100
+                      </button>
+                    )}
                   </div>
                 </div>
-
-                <div className="flex items-center justify-between pt-3 mt-2 border-t border-slate-800/40 text-[11px]">
-                  <span className="text-slate-400 font-mono">
-                    {currSym}{formatNumber(Math.max(0, target - current), currSym, 0, 0)} to target
-                  </span>
-                  {!isCompleted && (
-                    <button
-                      onClick={() => handleQuickDeposit(goal.id, 100)}
-                      className="px-2 py-0.5 text-[10px] font-medium bg-slate-800 hover:bg-slate-750 text-slate-200 border border-slate-700 rounded transition-colors cursor-pointer"
-                    >
-                      + Deposit {currSym}100
-                    </button>
-                  )}
-                </div>
-              </div>
-            )
-          })}
-        </div>
+              )
+            })}
+          </div>
+        )}
       </div>
     </div>
   )

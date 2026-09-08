@@ -10,12 +10,12 @@ export const CATEGORY_KEYWORDS = {
 }
 
 export const CATEGORY_COLORS = {
-  Food: { bg: 'bg-amber-500/10', text: 'text-amber-400', border: 'border-amber-500/30' },
-  Travel: { bg: 'bg-sky-500/10', text: 'text-sky-400', border: 'border-sky-500/30' },
-  Bills: { bg: 'bg-purple-500/10', text: 'text-purple-400', border: 'border-purple-500/30' },
-  Subscriptions: { bg: 'bg-indigo-500/10', text: 'text-indigo-400', border: 'border-indigo-500/30' },
-  Entertainment: { bg: 'bg-pink-500/10', text: 'text-pink-400', border: 'border-pink-500/30' },
-  Shopping: { bg: 'bg-rose-500/10', text: 'text-rose-400', border: 'border-rose-500/30' },
+  Food: { bg: 'bg-rose-500/10', text: 'text-rose-400', border: 'border-rose-500/30' },
+  Travel: { bg: 'bg-indigo-500/10', text: 'text-indigo-400', border: 'border-indigo-500/30' },
+  Bills: { bg: 'bg-amber-500/10', text: 'text-amber-400', border: 'border-amber-500/30' },
+  Subscriptions: { bg: 'bg-sky-500/10', text: 'text-sky-400', border: 'border-sky-500/30' },
+  Entertainment: { bg: 'bg-violet-500/10', text: 'text-violet-400', border: 'border-violet-500/30' },
+  Shopping: { bg: 'bg-emerald-500/10', text: 'text-emerald-400', border: 'border-emerald-500/30' },
   Salary: { bg: 'bg-emerald-500/10', text: 'text-emerald-400', border: 'border-emerald-500/30' },
   Other: { bg: 'bg-slate-500/10', text: 'text-slate-400', border: 'border-slate-500/30' }
 }
@@ -32,7 +32,7 @@ export function parseQuickAdd(query) {
 
   // 2. Detect Recurring
   const recurringWords = ['recurring', 'monthly', 'weekly', 'yearly', 'annual', 'subscription', 'every month']
-  const isRecurring = recurringWords.some(w => lower.includes(w))
+  let isRecurring = recurringWords.some(w => lower.includes(w))
 
   // 3. Extract Amount
   // Matches $45, 45.50, ₹1200, 1200 inr, 50usd, etc.

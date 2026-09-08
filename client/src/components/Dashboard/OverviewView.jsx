@@ -172,31 +172,54 @@ export default function OverviewView({
 
           <div className="space-y-6">
             <div>
-              <div className="text-[32px] sm:text-[40px] font-bold text-white tracking-[-0.035em] font-mono-nums leading-none">
-                <AnimatedCounter value={budgetPercent} decimals={0} suffix="%" />
-              </div>
-              <p className="text-[13px] sm:text-[14px] text-slate-400 font-medium mt-1.5 leading-relaxed">
-                {currSym}{formatNumber(Math.round(totalExpense), currSym, 0, 0)} spent of {currSym}{formatNumber(Math.round(budgetLimit * multiplier), currSym, 0, 0)} monthly allowance
-              </p>
+              {budgetLimit > 0 ? (
+                <>
+                  <div className="text-[32px] sm:text-[40px] font-bold text-white tracking-[-0.035em] font-mono-nums leading-none">
+                    <AnimatedCounter value={budgetPercent} decimals={0} suffix="%" />
+                  </div>
+                  <p className="text-[13px] sm:text-[14px] text-slate-400 font-medium mt-1.5 leading-relaxed">
+                    {currSym}{formatNumber(Math.round(totalExpense), currSym, 0, 0)} spent of {currSym}{formatNumber(Math.round(budgetLimit * multiplier), currSym, 0, 0)} monthly allowance
+                  </p>
+                </>
+              ) : (
+                <>
+                  <div className="text-[26px] sm:text-[32px] font-bold text-slate-300 tracking-tight leading-none">
+                    No budget set
+                  </div>
+                  <p className="text-[13px] sm:text-[14px] text-slate-400 font-medium mt-1.5 leading-relaxed">
+                    Set a monthly limit to monitor cashflow & keep spending on track
+                  </p>
+                </>
+              )}
             </div>
 
             {/* Budget Progress Bar & Status */}
             <div className="space-y-1.5 pt-1">
               <div className="flex justify-between text-[11px] font-semibold tracking-wide">
-                <span className={budgetPercent > 90 ? "text-rose-400" : budgetPercent > 75 ? "text-amber-400" : "text-emerald-400"}>
-                  {budgetPercent > 90 ? "Budget threshold exceeded" : budgetPercent > 75 ? "Approaching threshold" : "Within budget limit"}
+                <span className={budgetLimit <= 0 ? "text-slate-400" : budgetPercent > 90 ? "text-rose-400" : budgetPercent > 75 ? "text-amber-400" : "text-emerald-400"}>
+                  {budgetLimit <= 0
+                    ? "No limit configured"
+                    : budgetPercent > 90
+                    ? "Budget threshold exceeded"
+                    : budgetPercent > 75
+                    ? "Approaching threshold"
+                    : "Within budget limit"}
                 </span>
                 <span className="text-slate-400 font-mono-nums">
-                  {totalExpense <= budgetLimit * multiplier 
+                  {budgetLimit <= 0
+                    ? "Enter limit below"
+                    : totalExpense <= budgetLimit * multiplier 
                     ? `${currSym}${formatNumber(Math.round((budgetLimit * multiplier) - totalExpense), currSym, 0, 0)} remaining`
                     : `${currSym}${formatNumber(Math.round(totalExpense - (budgetLimit * multiplier)), currSym, 0, 0)} over budget`}
                 </span>
               </div>
               <div className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
                 <div 
-                  style={{ width: `${Math.min(100, budgetPercent)}%` }} 
+                  style={{ width: `${budgetLimit <= 0 ? 0 : Math.min(100, budgetPercent)}%` }} 
                   className={`h-full transition-all duration-500 ${
-                    budgetPercent > 90
+                    budgetLimit <= 0
+                      ? "bg-slate-700"
+                      : budgetPercent > 90
                       ? "bg-rose-500"
                       : budgetPercent > 75
                       ? "bg-amber-500"
@@ -210,7 +233,11 @@ export default function OverviewView({
             <div className="grid grid-cols-2 gap-4 pt-5 mt-2 border-t border-slate-800">
               <div>
                 <p className="text-[11px] text-slate-500 font-semibold uppercase tracking-[0.06em] flex items-center gap-1.5">
-                  {totalExpense <= budgetLimit * multiplier ? (
+                  {budgetLimit <= 0 ? (
+                    <>
+                      <Target className="h-3.5 w-3.5 text-slate-400" /> Spending Target
+                    </>
+                  ) : totalExpense <= budgetLimit * multiplier ? (
                     <>
                       <TrendingUp className="h-3.5 w-3.5 text-emerald-400" /> Remaining Buffer
                     </>
@@ -221,10 +248,18 @@ export default function OverviewView({
                   )}
                 </p>
                 <p className={`text-[20px] sm:text-[24px] font-semibold font-mono-nums mt-0.5 leading-tight ${
-                  totalExpense <= budgetLimit * multiplier ? "text-emerald-400" : "text-rose-400"
+                  budgetLimit <= 0
+                    ? "text-slate-400"
+                    : totalExpense <= budgetLimit * multiplier ? "text-emerald-400" : "text-rose-400"
                 }`}>
-                  {totalExpense <= budgetLimit * multiplier ? "+" : "-"}
-                  {currSym}{formatNumber(Math.round(Math.abs((budgetLimit * multiplier) - totalExpense)), currSym, 0, 0)}
+                  {budgetLimit <= 0 ? (
+                    "—"
+                  ) : (
+                    <>
+                      {totalExpense <= budgetLimit * multiplier ? "+" : "-"}
+                      {currSym}{formatNumber(Math.round(Math.abs((budgetLimit * multiplier) - totalExpense)), currSym, 0, 0)}
+                    </>
+                  )}
                 </p>
               </div>
               <div className="pl-4 border-l border-slate-800">
@@ -245,12 +280,13 @@ export default function OverviewView({
                   </span>
                   <input
                     type="text"
-                    value={formatNumber(Math.round(budgetLimit * multiplier), currSym, 0, 0)}
+                    placeholder="0"
+                    value={budgetLimit > 0 ? formatNumber(Math.round(budgetLimit * multiplier), currSym, 0, 0) : ""}
                     onChange={(e) => {
                       const val = e.target.value.replace(/[^0-9]/g, '')
                       setBudgetLimit((Number(val) || 0) / multiplier)
                     }}
-                    className="w-28 bg-transparent text-[20px] sm:text-[24px] font-semibold text-white font-mono-nums leading-tight outline-none focus:text-blue-400 transition-colors"
+                    className="w-28 bg-transparent text-[20px] sm:text-[24px] font-semibold text-white font-mono-nums leading-tight outline-none focus:text-blue-400 placeholder:text-slate-600 transition-colors"
                   />
                 </div>
               </div>
