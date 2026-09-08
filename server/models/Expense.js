@@ -23,6 +23,10 @@ const expenseSchema = new mongoose.Schema(
       type: String,
       enum: ['income', 'expense'],
       default: 'expense'
+    },
+    isRecurring: {
+      type: Boolean,
+      default: false
     }
   },
   {

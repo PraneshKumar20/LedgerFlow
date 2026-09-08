@@ -474,7 +474,7 @@ export default function Dashboard() {
           onLogout={handleLogout}
         />
 
-        <main className="flex-1 px-4 sm:px-6 lg:px-10 pt-6 lg:pt-8 max-w-7xl w-full mx-auto">
+        <main className="flex-1 px-4 sm:px-6 lg:px-12 pt-8 lg:pt-10 max-w-[1440px] w-full mx-auto">
           {/* Desktop App Header */}
           <AppHeader
             activeTab={activeTab}
@@ -598,6 +598,7 @@ export default function Dashboard() {
         onClose={() => setIsModalOpen(false)}
         onSave={handleSaveTransaction}
         editingTransaction={editingTransaction}
+        currencySymbol={currSym}
       />
 
       <QuickAddCommand 

@@ -1,4 +1,6 @@
 import { useMemo } from "react"
+import { formatNumber } from "../../utils/formatUtils"
+import { getCategoryStyle } from "../../utils/categoryColors"
 import { 
   Radio, 
   Clock, 
@@ -6,16 +8,52 @@ import {
   Plus, 
   AlertTriangle, 
   CreditCard, 
-  Bell
+  Bell,
+  Dumbbell,
+  Wifi,
+  Zap,
+  ShoppingBag,
+  Film,
+  Headphones,
+  Home,
+  Coffee,
+  Tv,
+  Monitor
 } from "lucide-react"
 import AnimatedCounter from "../ui/AnimatedCounter"
 
-const CATEGORY_BADGES = {
-  Subscriptions: "bg-indigo-500/10 text-indigo-400 border-indigo-500/20",
-  Bills: "bg-slate-800 text-slate-300 border-slate-700",
-  Food: "bg-amber-500/10 text-amber-400 border-amber-500/20",
-  Travel: "bg-sky-500/10 text-sky-400 border-sky-500/20",
-  Other: "bg-slate-800 text-slate-400 border-slate-700"
+const getVisualIdentity = (title = '', category = '') => {
+  const style = getCategoryStyle(category)
+  const t = title.toLowerCase()
+  let icon = CreditCard
+
+  if (t.includes('netflix') || t.includes('hulu') || t.includes('prime') || t.includes('tv') || category.toLowerCase() === 'entertainment') {
+    icon = Film
+  } else if (t.includes('spotify') || t.includes('music')) {
+    icon = Headphones
+  } else if (t.includes('gym') || t.includes('fitness')) {
+    icon = Dumbbell
+  } else if (t.includes('internet') || t.includes('wifi') || t.includes('broadband')) {
+    icon = Wifi
+  } else if (t.includes('electric') || t.includes('power') || t.includes('energy')) {
+    icon = Zap
+  } else if (t.includes('grocery') || t.includes('groceries') || category.toLowerCase() === 'food') {
+    icon = ShoppingBag
+  } else if (category.toLowerCase() === 'bills' || t.includes('bill')) {
+    icon = Home
+  } else if (category.toLowerCase() === 'subscriptions') {
+    icon = Monitor
+  }
+
+  const colorMatch = style.text.match(/text-([a-z]+)-\d+/)
+  const cName = colorMatch ? colorMatch[1] : 'slate'
+
+  return { 
+    icon, 
+    color: style.text, 
+    bg: `bg-gradient-to-br from-${cName}-500/20 to-${cName}-500/5`, 
+    border: `border-${cName}-500/20` 
+  }
 }
 
 export default function SubscriptionsView({
@@ -64,14 +102,14 @@ export default function SubscriptionsView({
   }, [recurringSubscriptions])
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6 md:space-y-8">
       {/* Top Recurring Radar KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
         {/* Monthly Recurring Burn */}
-        <div className="finance-card p-5">
+        <div className="finance-card p-5 sm:p-6 lg:p-7">
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-semibold uppercase tracking-[0.06em] text-slate-500">Monthly Subscription Costs</span>
-            <div className="p-1 rounded bg-slate-800 text-indigo-400">
+            <div className="p-1 rounded bg-slate-800 text-blue-400">
               <Radio className="h-4 w-4" />
             </div>
           </div>
@@ -82,7 +120,7 @@ export default function SubscriptionsView({
         </div>
 
         {/* Projected Annual Burn */}
-        <div className="finance-card p-5">
+        <div className="finance-card p-5 sm:p-6 lg:p-7">
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-semibold uppercase tracking-[0.06em] text-slate-500">Annual Projected Costs</span>
             <div className="p-1 rounded bg-slate-800 text-slate-400">
@@ -96,14 +134,14 @@ export default function SubscriptionsView({
         </div>
 
         {/* Imminent Renewals Alert */}
-        <div className="finance-card p-5">
+        <div className="finance-card p-5 sm:p-6 lg:p-7">
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-semibold uppercase tracking-[0.06em] text-slate-500">Renewals in &le; 3 Days</span>
-            <div className={`p-1 rounded ${imminentRenewals.length > 0 ? 'bg-amber-500/10 text-amber-400' : 'bg-slate-800 text-slate-400'}`}>
+            <div className={`p-1 rounded ${imminentRenewals.length > 0 ? 'bg-red-500/10 text-red-400' : 'bg-slate-800 text-slate-400'}`}>
               <Bell className="h-4 w-4" />
             </div>
           </div>
-          <p className={`text-[20px] sm:text-[26px] font-semibold font-mono-nums mt-2 leading-tight ${imminentRenewals.length > 0 ? 'text-amber-400' : 'text-slate-200'}`}>
+          <p className={`text-[20px] sm:text-[26px] font-semibold font-mono-nums mt-2 leading-tight ${imminentRenewals.length > 0 ? 'text-red-400' : 'text-slate-200'}`}>
             {imminentRenewals.length}
           </p>
           <p className="text-xs text-slate-400 font-normal mt-0.5">
@@ -114,15 +152,15 @@ export default function SubscriptionsView({
 
       {/* Imminent Alert Notice */}
       {imminentRenewals.length > 0 && (
-        <div className="p-3.5 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-between gap-3">
+        <div className="p-4 sm:p-5 rounded-lg bg-red-500/10 border border-red-500/20 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2.5">
-            <AlertTriangle className="h-4 w-4 text-amber-400 shrink-0" />
+            <AlertTriangle className="h-4 w-4 text-red-400 shrink-0" />
             <div>
-              <p className="text-xs font-semibold text-amber-300">
+              <p className="text-xs font-semibold text-red-300">
                 Notice: {imminentRenewals.length} subscription{imminentRenewals.length > 1 ? 's' : ''} renew within 3 days
               </p>
-              <p className="text-xs text-amber-300/80 font-normal">
-                Total debit: {currencySymbol}{imminentRenewals.reduce((a, b) => a + b.amount, 0).toFixed(2)}
+              <p className="text-xs text-red-300/80 font-normal">
+                Total debit: {currencySymbol}{formatNumber(imminentRenewals.reduce((a, b) => a + b.amount, 0), currencySymbol)}
               </p>
             </div>
           </div>
@@ -130,8 +168,8 @@ export default function SubscriptionsView({
       )}
 
       {/* Subscriptions List */}
-      <div className="finance-card p-5">
-        <div className="flex items-center justify-between pb-3 border-b border-slate-800 mb-4">
+      <div className="finance-card p-5 sm:p-6 lg:p-7">
+        <div className="flex items-center justify-between pb-4 border-b border-slate-800 mb-6">
           <div>
             <h2 className="text-[19px] font-bold text-white tracking-tight flex items-center gap-2">
               <CreditCard className="h-4 w-4 text-slate-400" />
@@ -144,7 +182,7 @@ export default function SubscriptionsView({
 
           <button
             onClick={openAddModal}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold transition-colors cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold transition-colors cursor-pointer"
           >
             <Plus className="h-3.5 w-3.5" />
             <span>Add Recurring Bill</span>
@@ -160,51 +198,74 @@ export default function SubscriptionsView({
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {recurringSubscriptions.map((sub) => {
-              const isUrgent = sub.daysUntilRenewal <= 3
-              const badgeClass = CATEGORY_BADGES[sub.category] || CATEGORY_BADGES.Other
+              const days = sub.daysUntilRenewal
+              const isUrgent = days <= 3
+              const isMedium = days > 3 && days <= 14
+              const isMore = days > 14
+              
+              const identity = getVisualIdentity(sub.title, sub.category)
+
+              let statusDotColor = 'bg-slate-600'
+              let statusDateColor = 'text-slate-400'
+              let statusTimeColor = 'text-slate-500 font-medium'
+              let cardBgColor = 'bg-slate-900/40 border-slate-800/60'
+
+              if (isUrgent) {
+                statusDotColor = 'bg-red-400 animate-pulse'
+                statusDateColor = 'text-red-400 font-medium'
+                statusTimeColor = 'text-red-500/80 font-medium'
+                cardBgColor = 'bg-red-500/5 border-red-500/30'
+              } else if (isMedium) {
+                statusDotColor = 'bg-blue-400'
+                statusDateColor = 'text-blue-400 font-medium'
+                statusTimeColor = 'text-blue-500/80 font-medium'
+              } else if (isMore) {
+                statusDotColor = 'bg-emerald-400'
+                statusDateColor = 'text-emerald-400 font-medium'
+                statusTimeColor = 'text-emerald-500/80 font-medium'
+              }
 
               return (
                 <div
                   key={sub._id}
-                  className={`p-3.5 rounded-lg border transition-colors ${
-                    isUrgent 
-                      ? 'bg-amber-500/5 border-amber-500/30' 
-                      : 'bg-slate-900/60 border-slate-800'
-                  }`}
+                  className={`p-5 sm:p-6 rounded-xl border transition-colors ${cardBgColor} flex flex-col justify-between min-h-[140px]`}
                 >
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <h3 className="text-xs font-semibold text-white truncate">{sub.title}</h3>
-                      <span className={`inline-block mt-1 px-1.5 py-0.2 rounded text-[10px] font-medium border ${badgeClass}`}>
-                        {sub.category}
+                  {/* Header */}
+                  <div className="flex items-start gap-3.5">
+                    <div className={`h-11 w-11 rounded-xl flex items-center justify-center border shrink-0 ${identity.bg} ${identity.border} ${identity.color}`}>
+                      <identity.icon className="h-5 w-5" />
+                    </div>
+                    <div className="min-w-0 flex-1 pt-0.5">
+                      <h3 className="text-[15px] font-semibold text-slate-100 truncate leading-snug">{sub.title}</h3>
+                      <div className="flex items-center gap-1.5 mt-1">
+                        <span className={`text-[11px] font-medium ${identity.color} opacity-80`}>
+                          {sub.category}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Spacer and Bottom */}
+                  <div className="mt-6 pt-4 border-t border-slate-800/50 flex flex-wrap items-end justify-between gap-3">
+                    {/* Renewal Info */}
+                    <div className="flex items-center gap-1.5 text-xs">
+                      <div className={`h-1.5 w-1.5 rounded-full ${statusDotColor}`} />
+                      <span className={statusDateColor}>
+                        {sub.nextBillingDate}
+                      </span>
+                      <span className={statusTimeColor}>
+                        · {days === 0 ? "Today" : `In ${days}d`}
                       </span>
                     </div>
 
-                    <span className={`text-[10px] font-mono font-medium px-2 py-0.5 rounded border ${
-                      isUrgent 
-                        ? 'bg-amber-500/10 text-amber-300 border-amber-500/30' 
-                        : 'bg-slate-800 text-slate-300 border-slate-700'
-                    }`}>
-                      {sub.daysUntilRenewal === 0 ? "Today" : `In ${sub.daysUntilRenewal}d`}
-                    </span>
-                  </div>
-
-                  <div className="mt-3 pt-2.5 border-t border-slate-800 flex items-center justify-between">
-                    <div>
-                      <p className="text-[10px] text-slate-400">Next cycle</p>
-                      <p className="text-xs font-medium text-slate-200 mt-0.5 flex items-center gap-1">
-                        <Calendar className="h-3 w-3 text-slate-400" />
-                        <span>{sub.nextBillingDate}</span>
-                      </p>
-                    </div>
-
-                    <div className="text-right">
-                      <p className="text-[10px] text-slate-400">Rate</p>
-                      <p className="text-xs font-bold text-white font-mono-nums mt-0.5">
-                        {currencySymbol}{sub.amount.toFixed(2)}/mo
-                      </p>
+                    {/* Amount */}
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-[19px] font-semibold text-white font-mono-nums tracking-tight">
+                        {currencySymbol}{formatNumber(sub.amount, currencySymbol)}
+                      </span>
+                      <span className="text-[11px] text-slate-500 font-medium">/month</span>
                     </div>
                   </div>
                 </div>

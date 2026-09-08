@@ -1,4 +1,5 @@
 import { useMemo } from "react"
+import { formatNumber } from "../../utils/formatUtils"
 import { Award, Sparkles } from "lucide-react"
 import AnimatedCounter from "../ui/AnimatedCounter"
 
@@ -82,10 +83,10 @@ export default function FinancialHealthCard({
       {
         name: "Savings Ratio",
         scoreValue: totalIncome > 0 
-          ? `${currencySymbol}${netSurplus.toLocaleString('en-US', { maximumFractionDigits: 0 })}` 
+          ? `${currencySymbol}${formatNumber(netSurplus, currencySymbol, 0, 0)}` 
           : `${savingsScore} pts`,
         targetValue: totalIncome > 0 
-          ? `of ${currencySymbol}${totalIncome.toLocaleString('en-US', { maximumFractionDigits: 0 })}` 
+          ? `of ${currencySymbol}${formatNumber(totalIncome, currencySymbol, 0, 0)}` 
           : `of 35 max`,
         percent: Math.min(100, Math.max(0, savingsRate || (savingsScore / 35) * 100)),
         detail: `${savingsRate.toFixed(0)}% retained`,
@@ -97,10 +98,10 @@ export default function FinancialHealthCard({
       {
         name: "Budget Buffer",
         scoreValue: budgetLimit > 0 
-          ? `${currencySymbol}${totalExpense.toLocaleString('en-US', { maximumFractionDigits: 0 })}` 
+          ? `${currencySymbol}${formatNumber(totalExpense, currencySymbol, 0, 0)}` 
           : `${budgetScore} pts`,
         targetValue: budgetLimit > 0 
-          ? `of ${currencySymbol}${budgetLimit.toLocaleString('en-US', { maximumFractionDigits: 0 })}` 
+          ? `of ${currencySymbol}${formatNumber(budgetLimit, currencySymbol, 0, 0)}` 
           : `of 30 max`,
         percent: Math.min(100, Math.max(0, budgetUsage)),
         detail: `${Math.max(0, Math.round(100 - budgetUsage))}% headroom`,
@@ -112,7 +113,7 @@ export default function FinancialHealthCard({
       {
         name: "Cashflow Buffer",
         scoreValue: totalIncome > 0 || totalExpense > 0 
-          ? `${currencySymbol}${Math.abs(totalIncome - totalExpense).toLocaleString('en-US', { maximumFractionDigits: 0 })}` 
+          ? `${currencySymbol}${formatNumber(Math.abs(totalIncome - totalExpense), currencySymbol, 0, 0)}` 
           : `${stabilityScore} pts`,
         targetValue: totalIncome > 0 || totalExpense > 0 
           ? `net ${totalIncome >= totalExpense ? "surplus" : "deficit"}` 
@@ -126,8 +127,8 @@ export default function FinancialHealthCard({
       },
       {
         name: "Fixed Burden",
-        scoreValue: `${currencySymbol}${recurringExpense.toLocaleString('en-US', { maximumFractionDigits: 0 })}`,
-        targetValue: `of ${currencySymbol}${totalExpense.toLocaleString('en-US', { maximumFractionDigits: 0 })}`,
+        scoreValue: `${currencySymbol}${formatNumber(recurringExpense, currencySymbol, 0, 0)}`,
+        targetValue: `of ${currencySymbol}${formatNumber(totalExpense, currencySymbol, 0, 0)}`,
         percent: Math.min(100, Math.max(0, recurringRatio)),
         detail: `${recurringRatio.toFixed(0)}% recurring`,
         badgeClass: recurringScore >= 11 ? "bg-purple-500/10 text-purple-400 border-purple-500/20" : "bg-amber-500/10 text-amber-400 border-amber-500/20",
@@ -193,7 +194,7 @@ export default function FinancialHealthCard({
   }, [totalIncome, totalExpense, budgetLimit, expenses, currencySymbol])
 
   return (
-    <div className="finance-card p-5 space-y-5">
+    <div className="finance-card p-5 sm:p-6 lg:p-7 space-y-6 md:space-y-8">
       {/* Section Header (matching Category Budgets & Savings Goals header standard) */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-800">
         <div>
@@ -221,35 +222,81 @@ export default function FinancialHealthCard({
         </div>
       </div>
 
-      {/* 4 Health Pillars Grid (matching Category Budgets 4-card row layout) */}
+      {/* 2. Full-Width Recommendation Insight Bar */}
+      {recommendations.length > 0 && (
+        <div className="rounded-xl bg-slate-900/40 border border-slate-800/60 p-4 sm:p-5 lg:p-6 space-y-5">
+          <div className="flex items-center justify-between pb-3 border-b border-slate-800/50">
+            <div className="flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-indigo-400" />
+              <span className="text-xs font-semibold text-slate-200 uppercase tracking-wider">
+                Recommendation
+              </span>
+            </div>
+            <span className="text-[11px] text-slate-500">
+              {recommendations.length} insight{recommendations.length !== 1 ? 's' : ''}
+            </span>
+          </div>
+
+          <div className="space-y-5">
+            {recommendations.map((rec, idx) => (
+              <div key={idx} className="flex flex-col gap-3">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div className="flex items-center gap-3">
+                    <span className="text-xl shrink-0">{rec.emoji}</span>
+                    <h3 className="text-base font-semibold text-white">{rec.title}</h3>
+                  </div>
+                  <span className="inline-block self-start sm:self-auto text-[11px] font-medium text-slate-500 bg-slate-800/50 px-2 py-0.5 rounded">
+                    {rec.category}
+                  </span>
+                </div>
+                
+                <p className="text-sm text-slate-400 leading-relaxed max-w-3xl sm:pl-9">
+                  {rec.desc}
+                </p>
+
+                <div className="flex items-center justify-between text-[11px] pt-3 mt-1.5 border-t border-slate-800/40 sm:ml-9">
+                  <span className="text-slate-500">
+                    Impact: <span className="font-medium text-slate-300">{rec.impact}</span>
+                  </span>
+                  <span className="text-emerald-400 font-medium">
+                    Active Advice
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* 3. 4 Health Pillars Grid (Secondary Supporting Metrics) */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
         {pillars.map((pillar) => (
           <div
             key={pillar.name}
-            className="p-3.5 rounded-lg bg-slate-900/60 border border-slate-800 space-y-2.5"
+            className="p-4 sm:p-5 rounded-lg bg-slate-900/40 border border-slate-800/40 space-y-4"
           >
-            {/* Row 1: Category / Pillar Badge on left + Percentage on right */}
+            {/* Row 1: Pillar name on left + Percentage on right */}
             <div className="flex items-center justify-between">
-              <span className={`px-2 py-0.5 rounded text-[11px] font-medium border ${pillar.badgeClass}`}>
+              <span className="text-[12px] font-semibold text-slate-300">
                 {pillar.name}
               </span>
-              <span className="text-xs font-mono-nums text-slate-400">
+              <span className="text-[11px] font-mono-nums text-slate-500">
                 {pillar.percent.toFixed(0)}%
               </span>
             </div>
 
-            {/* Row 2: Score + Max Limit */}
-            <div className="space-y-1">
-              <div className="flex justify-between items-baseline text-xs font-mono-nums">
-                <span className="text-white font-semibold">
+            {/* Row 2: Primary value + secondary context */}
+            <div className="space-y-2">
+              <div className="flex justify-between items-baseline">
+                <span className="text-[17px] font-semibold text-white font-mono-nums leading-tight">
                   {pillar.scoreValue}
                 </span>
-                <span className="text-slate-400 text-[11px]">
+                <span className="text-[11px] text-slate-500">
                   {pillar.targetValue}
                 </span>
               </div>
 
-              {/* Row 3: Progress Bar matching category progress bars */}
+              {/* Row 3: Progress Bar */}
               <div className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
                 <div
                   className={`h-full rounded-full transition-all duration-300 ${pillar.barColor}`}
@@ -258,9 +305,9 @@ export default function FinancialHealthCard({
               </div>
             </div>
 
-            {/* Row 4: Status Detail on left + Status Assessment on right */}
-            <div className="flex items-center justify-between pt-2 border-t border-slate-800 text-[11px]">
-              <span className="text-slate-400">
+            {/* Row 4: Detail + Status */}
+            <div className="flex items-center justify-between pt-3 mt-1 border-t border-slate-800/40 text-[11px]">
+              <span className="text-slate-500">
                 {pillar.detail}
               </span>
               <span className={`font-medium ${pillar.statusTextClass}`}>
@@ -269,59 +316,6 @@ export default function FinancialHealthCard({
             </div>
           </div>
         ))}
-      </div>
-
-      {/* Targeted Recommendations Grid (matching Savings Goals 3-card row layout) */}
-      <div className="pt-2 border-t border-slate-800/80 space-y-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-indigo-400" />
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-300">
-              Targeted Intelligence Recommendations ({recommendations.length})
-            </span>
-          </div>
-          <span className="text-[11px] text-slate-500 font-medium">
-            Automated ledger evaluation
-          </span>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
-          {recommendations.map((rec, idx) => (
-            <div
-              key={idx}
-              className="p-4 rounded-lg bg-slate-900/60 border border-slate-800 space-y-3"
-            >
-              <div className="flex items-start justify-between gap-2">
-                <div className="flex items-center gap-2.5">
-                  <span className="text-xl p-1.5 rounded bg-slate-800 border border-slate-700 shrink-0">
-                    {rec.emoji}
-                  </span>
-                  <div>
-                    <h3 className="text-xs font-semibold text-white truncate max-w-[150px]">{rec.title}</h3>
-                    <p className="text-[10px] text-slate-400 mt-0.5">{rec.category}</p>
-                  </div>
-                </div>
-
-                <span className={`px-1.5 py-0.2 rounded text-[10px] font-semibold border shrink-0 ${rec.badgeClass}`}>
-                  {rec.potentialSaving}
-                </span>
-              </div>
-
-              <p className="text-xs text-slate-400 leading-relaxed font-normal">
-                {rec.desc}
-              </p>
-
-              <div className="flex items-center justify-between pt-2 border-t border-slate-800 text-[11px]">
-                <span className="text-slate-400">
-                  Impact: <span className="font-medium text-slate-300">{rec.impact}</span>
-                </span>
-                <span className="text-emerald-400 font-medium text-[11px]">
-                  Active Advice
-                </span>
-              </div>
-            </div>
-          ))}
-        </div>
       </div>
     </div>
   )

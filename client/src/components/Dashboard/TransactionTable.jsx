@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react"
+import { formatNumber } from "../../utils/formatUtils"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table"
 import { Button } from "../ui/button"
 import { Input } from "../ui/input"
@@ -13,16 +14,8 @@ import {
   Repeat
 } from "lucide-react"
 
-const CATEGORY_BADGES = {
-  Food: "bg-amber-500/10 text-amber-400 border-amber-500/20",
-  Salary: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
-  Travel: "bg-sky-500/10 text-sky-400 border-sky-500/20",
-  Bills: "bg-slate-800 text-slate-300 border-slate-700",
-  Subscriptions: "bg-indigo-500/10 text-indigo-400 border-indigo-500/20",
-  Entertainment: "bg-purple-500/10 text-purple-400 border-purple-500/20",
-  Shopping: "bg-rose-500/10 text-rose-400 border-rose-500/20",
-  Other: "bg-slate-800 text-slate-400 border-slate-700"
-}
+import { getCategoryStyle } from "../../utils/categoryColors"
+
 
 export default function TransactionTable({ transactions = [], onEdit, onDelete, currencySymbol = "₹" }) {
   const [searchTerm, setSearchTerm] = useState("")
@@ -96,52 +89,52 @@ export default function TransactionTable({ transactions = [], onEdit, onDelete, 
   return (
     <div className="space-y-3">
       {/* Search & Filter Toolbar */}
-      <div className="flex flex-col md:flex-row gap-2.5 items-stretch md:items-center justify-between">
+      <div className="flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
         {/* Search Bar */}
         <div className="flex-1 relative max-w-md">
-          <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-slate-400" />
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
           <Input
             placeholder="Search transactions, payees, categories..."
-            className="pl-9 pr-8 bg-slate-900 border-slate-800 text-xs text-slate-200 placeholder:text-slate-500 h-9 rounded-lg focus-visible:border-indigo-500"
+            className="pl-10 pr-10 bg-slate-900/50 border-slate-800/80 text-[13px] text-slate-100 placeholder:text-slate-500 h-10 rounded-xl focus-visible:border-blue-500 shadow-sm transition-all"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
           {searchTerm && (
             <button 
               onClick={() => setSearchTerm("")}
-              className="absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-200 cursor-pointer"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200 transition-colors"
             >
-              <X className="h-3.5 w-3.5" />
+              <X className="h-4 w-4" />
             </button>
           )}
         </div>
 
         {/* Filter Controls & CSV Export */}
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2.5">
           {/* Type Filter */}
-          <div className="bg-slate-900 rounded-lg border border-slate-800 flex items-center">
+          <div className="bg-slate-900/80 rounded-xl border border-slate-800/80 flex items-center shadow-sm">
             <Select value={filterType} onValueChange={setFilterType}>
-              <SelectTrigger className="w-[100px] border-0 bg-transparent h-8 text-xs font-medium text-slate-300 focus:ring-0">
+              <SelectTrigger className="w-[110px] border-0 bg-transparent h-10 px-3.5 text-[13px] font-medium text-slate-200 focus:ring-0 cursor-pointer">
                 <SelectValue placeholder="All Types" />
               </SelectTrigger>
-              <SelectContent className="bg-slate-900 border-slate-800 text-slate-200 text-xs">
-                <SelectItem value="all">All Types</SelectItem>
-                <SelectItem value="income">Income</SelectItem>
-                <SelectItem value="expense">Expense</SelectItem>
+              <SelectContent className="bg-[#0f1523] border-slate-800 text-slate-200 text-sm shadow-xl rounded-lg">
+                <SelectItem value="all" className="cursor-pointer">All Types</SelectItem>
+                <SelectItem value="income" className="cursor-pointer">Income</SelectItem>
+                <SelectItem value="expense" className="cursor-pointer">Expense</SelectItem>
               </SelectContent>
             </Select>
 
-            <div className="w-px h-3.5 bg-slate-800" />
+            <div className="w-px h-5 bg-slate-800/80" />
 
             {/* Category Filter */}
             <Select value={filterCategory} onValueChange={setFilterCategory}>
-              <SelectTrigger className="w-[120px] border-0 bg-transparent h-8 text-xs font-medium text-slate-300 focus:ring-0">
+              <SelectTrigger className="w-[140px] border-0 bg-transparent h-10 px-3.5 text-[13px] font-medium text-slate-200 focus:ring-0 cursor-pointer">
                 <SelectValue placeholder="All Categories" />
               </SelectTrigger>
-              <SelectContent className="bg-slate-900 border-slate-800 text-slate-200 text-xs">
-                <SelectItem value="all">All Categories</SelectItem>
+              <SelectContent className="bg-[#0f1523] border-slate-800 text-slate-200 text-sm shadow-xl rounded-lg">
+                <SelectItem value="all" className="cursor-pointer">All Categories</SelectItem>
                 {categories.map(c => (
-                  <SelectItem key={c} value={c}>{c}</SelectItem>
+                  <SelectItem key={c} value={c} className="cursor-pointer">{c}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -150,23 +143,21 @@ export default function TransactionTable({ transactions = [], onEdit, onDelete, 
           {/* Date Sort Toggle */}
           <Button
             variant="outline"
-            size="sm"
             onClick={() => setSortOrder(sortOrder === "desc" ? "asc" : "desc")}
-            className="h-8 px-2.5 bg-slate-900 border-slate-800 hover:bg-slate-800 text-xs font-medium text-slate-300 rounded-lg"
+            className="h-10 px-3.5 bg-slate-900/80 border-slate-800/80 hover:bg-slate-800 hover:border-slate-700 text-[13px] font-medium text-slate-200 rounded-xl shadow-sm transition-all"
             title="Toggle sort order"
           >
-            <ArrowUpDown className="h-3 w-3 mr-1 text-slate-400" />
+            <ArrowUpDown className="h-3.5 w-3.5 mr-2 text-slate-400" />
             <span>{sortOrder === "desc" ? "Newest" : "Oldest"}</span>
           </Button>
 
           {/* Export CSV */}
           <Button
             variant="outline"
-            size="sm"
             onClick={exportCSV}
-            className="h-8 px-2.5 bg-slate-900 border-slate-800 hover:bg-slate-800 text-xs font-medium text-slate-300 rounded-lg"
+            className="h-10 px-4 bg-slate-800 border-slate-700 hover:bg-slate-700 hover:border-slate-600 text-[13px] font-semibold text-white rounded-xl shadow-sm transition-all flex items-center"
           >
-            <Download className="h-3 w-3 mr-1 text-emerald-400" />
+            <Download className="h-4 w-4 mr-2 text-blue-400" />
             <span>Export CSV</span>
           </Button>
         </div>
@@ -179,7 +170,7 @@ export default function TransactionTable({ transactions = [], onEdit, onDelete, 
           {(searchTerm || filterType !== "all" || filterCategory !== "all") && (
             <button
               onClick={resetFilters}
-              className="text-[11px] text-indigo-400 hover:text-indigo-300 underline cursor-pointer"
+              className="text-[11px] text-blue-400 hover:text-blue-300 underline cursor-pointer"
             >
               Clear filters
             </button>
@@ -187,10 +178,10 @@ export default function TransactionTable({ transactions = [], onEdit, onDelete, 
         </div>
         <div className="flex items-center gap-3 font-mono-nums text-[11px]">
           <span className="text-emerald-400 font-semibold">
-            +{currencySymbol}{filteredIncome.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            +{currencySymbol}{formatNumber(filteredIncome, currencySymbol)}
           </span>
           <span className="text-rose-400 font-semibold">
-            -{currencySymbol}{filteredExpense.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            -{currencySymbol}{formatNumber(filteredExpense, currencySymbol)}
           </span>
         </div>
       </div>
@@ -241,7 +232,7 @@ export default function TransactionTable({ transactions = [], onEdit, onDelete, 
             ) : (
               filteredTransactions.map((tx) => {
                 const isIncome = tx.type === 'income'
-                const badgeClass = CATEGORY_BADGES[tx.category] || CATEGORY_BADGES.Other
+                const badgeClass = getCategoryStyle(tx.category).badge
 
                 return (
                   <tr
@@ -280,7 +271,7 @@ export default function TransactionTable({ transactions = [], onEdit, onDelete, 
 
                     {/* Amount */}
                     <TableCell className={`py-3 text-right font-mono-nums font-semibold text-[13px] ${isIncome ? 'text-emerald-400' : 'text-rose-400'}`}>
-                      {isIncome ? '+' : '-'}{currencySymbol}{Number(tx.amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      {isIncome ? '+' : '-'}{currencySymbol}{formatNumber(tx.amount, currencySymbol)}
                     </TableCell>
 
                     {/* Actions */}
@@ -323,7 +314,7 @@ export default function TransactionTable({ transactions = [], onEdit, onDelete, 
         ) : (
           filteredTransactions.map((tx) => {
             const isIncome = tx.type === 'income'
-            const badgeClass = CATEGORY_BADGES[tx.category] || CATEGORY_BADGES.Other
+            const badgeClass = getCategoryStyle(tx.category).badge
 
             return (
               <div
@@ -352,7 +343,7 @@ export default function TransactionTable({ transactions = [], onEdit, onDelete, 
 
                   <div className="text-right">
                     <span className={`font-mono-nums font-semibold text-[13px] ${isIncome ? 'text-emerald-400' : 'text-rose-400'}`}>
-                      {isIncome ? '+' : '-'}{currencySymbol}{Number(tx.amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      {isIncome ? '+' : '-'}{currencySymbol}{formatNumber(tx.amount, currencySymbol)}
                     </span>
                   </div>
                 </div>

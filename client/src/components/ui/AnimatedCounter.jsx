@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react"
+import { formatNumber } from "../../utils/formatUtils"
 
 export default function AnimatedCounter({ 
   value, 
@@ -40,10 +41,7 @@ export default function AnimatedCounter({
   return (
     <span className={className}>
       {prefix}
-      {displayValue.toLocaleString('en-US', {
-        minimumFractionDigits: decimals,
-        maximumFractionDigits: decimals
-      })}
+      {formatNumber(displayValue, prefix, decimals, decimals)}
       {suffix}
     </span>
   )

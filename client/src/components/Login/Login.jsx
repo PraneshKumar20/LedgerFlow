@@ -43,9 +43,7 @@ const Login = () => {
         <div className="min-h-screen flex items-center justify-center bg-[#090d16] p-4">
             <Card className="w-full max-w-md bg-[#0f1523] border border-slate-800 rounded-lg shadow-2xl">
                 <CardHeader className="space-y-2 text-center pb-4">
-                    <div className="inline-flex items-center justify-center w-10 h-10 rounded-md bg-indigo-600 text-white mx-auto mb-1">
-                        <span className="text-lg font-bold tracking-wider">LF</span>
-                    </div>
+                    <img src="/ledgerflow-logo.png?v=2" alt="LedgerFlow Logo" className="h-12 w-12 object-contain mx-auto mb-1 drop-shadow-sm" />
                     <CardTitle className="text-xl font-bold tracking-tight text-white">Sign in to LedgerFlow</CardTitle>
                     <CardDescription className="text-slate-400 text-xs">
                         Access your wealth analytics, category envelopes, and financial command
@@ -67,7 +65,7 @@ const Login = () => {
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 required
-                                className="bg-slate-900 border-slate-700 text-white text-xs placeholder:text-slate-500 rounded-md focus:border-indigo-500"
+                                className="bg-slate-900 border-slate-700 text-white text-xs placeholder:text-slate-500 rounded-md focus:border-blue-500"
                             />
                         </div>
                         <div className="space-y-1.5">
@@ -79,12 +77,12 @@ const Login = () => {
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 required
-                                className="bg-slate-900 border-slate-700 text-white text-xs placeholder:text-slate-500 rounded-md focus:border-indigo-500"
+                                className="bg-slate-900 border-slate-700 text-white text-xs placeholder:text-slate-500 rounded-md focus:border-blue-500"
                             />
                         </div>
                     </CardContent>
                     <CardFooter className="flex flex-col space-y-3 pt-2">
-                        <Button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs rounded-md transition-colors">
+                        <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-500 text-white font-medium text-xs rounded-md transition-colors">
                             Sign In
                         </Button>
 
@@ -111,7 +109,7 @@ const Login = () => {
                             <button
                                 type="button"
                                 onClick={() => navigate("/signup")}
-                                className="text-indigo-400 hover:text-indigo-300 font-medium underline underline-offset-4 transition-colors"
+                                className="text-blue-400 hover:text-blue-300 font-medium underline underline-offset-4 transition-colors"
                             >
                                 Sign up
                             </button>

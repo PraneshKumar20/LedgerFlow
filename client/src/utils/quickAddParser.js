@@ -59,6 +59,11 @@ export function parseQuickAdd(query) {
     }
   }
 
+  // Automatically mark as recurring if category is Subscriptions
+  if (detectedCategory === 'Subscriptions') {
+    isRecurring = true
+  }
+
   // 5. Detect Date
   let date = new Date()
   let dateLabel = "Today"

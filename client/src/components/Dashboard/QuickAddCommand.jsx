@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Sparkles, Command, ArrowRight, CornerDownLeft, X, CheckCircle2, Calendar, Tag, DollarSign, Repeat, ArrowUpRight, ArrowDownRight, Layers } from "lucide-react"
 import { parseQuickAdd, CATEGORY_COLORS } from "../../utils/quickAddParser"
+import { formatNumber } from "../../utils/formatUtils"
 
 const SAMPLE_PROMPTS = [
   "Spent $45 on groceries yesterday",
@@ -83,7 +84,7 @@ export default function QuickAddCommand({ isOpen, onClose, onSave, currencySymbo
           >
             {/* Input Header */}
             <div className="flex items-center gap-3 px-4 py-3.5 border-b border-slate-800">
-              <div className="p-1.5 rounded bg-slate-800 text-indigo-400">
+              <div className="p-1.5 rounded bg-slate-800 text-blue-400">
                 <Command className="h-4 w-4" />
               </div>
               <input
@@ -119,8 +120,8 @@ export default function QuickAddCommand({ isOpen, onClose, onSave, currencySymbo
                   <div className="flex flex-wrap items-center gap-2">
                     {/* Amount Chip */}
                     <div className="flex items-center gap-1 px-3 py-1.5 rounded bg-slate-800/80 border border-white/[0.08] text-white font-mono-nums text-sm font-bold shadow-sm">
-                      <DollarSign className="h-3.5 w-3.5 text-indigo-400 -mr-1" />
-                      <span>{currencySymbol}{parsedResult.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
+                      <DollarSign className="h-3.5 w-3.5 text-blue-400 -mr-1" />
+                      <span>{currencySymbol}{formatNumber(parsedResult.amount, currencySymbol)}</span>
                     </div>
 
                     {/* Category Chip */}
@@ -143,7 +144,7 @@ export default function QuickAddCommand({ isOpen, onClose, onSave, currencySymbo
 
                     {/* Recurring Badge */}
                     {parsedResult.isRecurring && (
-                      <div className="flex items-center gap-1 px-2.5 py-1 rounded bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-medium">
+                      <div className="flex items-center gap-1 px-2.5 py-1 rounded bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-medium">
                         <Repeat className="h-3 w-3" />
                         <span>Recurring</span>
                       </div>
@@ -178,7 +179,7 @@ export default function QuickAddCommand({ isOpen, onClose, onSave, currencySymbo
               {justRecorded && (
                 <div className="flex items-center gap-2 p-2.5 rounded bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-medium">
                   <CheckCircle2 className="h-4 w-4 text-emerald-400" />
-                  <span className="font-mono-nums">Recorded: {currencySymbol}{justRecorded.amount.toFixed(2)} for {justRecorded.title}</span>
+                  <span className="font-mono-nums">Recorded: {currencySymbol}{formatNumber(justRecorded.amount, currencySymbol)} for {justRecorded.title}</span>
                 </div>
               )}
             </div>
@@ -199,7 +200,7 @@ export default function QuickAddCommand({ isOpen, onClose, onSave, currencySymbo
               {parsedResult?.isValid && (
                 <button
                   onClick={handleSubmit}
-                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs transition-colors cursor-pointer"
+                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded bg-blue-600 hover:bg-blue-500 text-white font-medium text-xs transition-colors cursor-pointer"
                 >
                   <span>Confirm Entry</span>
                   <CornerDownLeft className="h-3 w-3" />

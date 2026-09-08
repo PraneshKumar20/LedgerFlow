@@ -74,7 +74,7 @@ export default function TransactionsView({
           </div>
           <button
             onClick={onOpenAddModal}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold transition-colors cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold transition-colors cursor-pointer"
           >
             <Plus className="h-3.5 w-3.5" />
             <span>Add Entry</span>

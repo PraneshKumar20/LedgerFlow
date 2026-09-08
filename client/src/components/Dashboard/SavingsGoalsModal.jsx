@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react"
+import { formatNumber } from "../../utils/formatUtils"
 import { motion, AnimatePresence } from "framer-motion"
 import confetti from "canvas-confetti"
 import { 
@@ -209,7 +210,7 @@ export default function SavingsGoalsModal({
                   <AnimatedCounter value={stats.totalTarget * multiplier} prefix={currencySymbol} />
                 </div>
                 <p className="text-xs text-slate-400 font-normal font-mono-nums">
-                  {currencySymbol}{Math.round(stats.totalRemaining * multiplier).toLocaleString()} to go
+                  {currencySymbol}{formatNumber(Math.round(stats.totalRemaining * multiplier), currencySymbol, 0, 0)} to go
                 </p>
               </div>
 
@@ -247,7 +248,7 @@ export default function SavingsGoalsModal({
                         placeholder="e.g. Emergency Fund, Japan Trip"
                         value={newTitle}
                         onChange={e => setNewTitle(e.target.value)}
-                        className="w-full mt-1 px-3 py-1.5 rounded-md bg-slate-900 border border-slate-700 text-white text-xs outline-none focus:border-indigo-500"
+                        className="w-full mt-1 px-3 py-1.5 rounded-md bg-slate-900 border border-slate-700 text-white text-xs outline-none focus:border-blue-500"
                         required
                       />
                     </div>
@@ -259,7 +260,7 @@ export default function SavingsGoalsModal({
                         placeholder="5000"
                         value={newTarget}
                         onChange={e => setNewTarget(e.target.value)}
-                        className="w-full mt-1 px-3 py-1.5 rounded-md bg-slate-900 border border-slate-700 text-white text-xs outline-none focus:border-indigo-500"
+                        className="w-full mt-1 px-3 py-1.5 rounded-md bg-slate-900 border border-slate-700 text-white text-xs outline-none focus:border-blue-500"
                         required
                         min="1"
                       />
@@ -272,7 +273,7 @@ export default function SavingsGoalsModal({
                         placeholder="0"
                         value={newCurrent}
                         onChange={e => setNewCurrent(e.target.value)}
-                        className="w-full mt-1 px-3 py-1.5 rounded-md bg-slate-900 border border-slate-700 text-white text-xs outline-none focus:border-indigo-500"
+                        className="w-full mt-1 px-3 py-1.5 rounded-md bg-slate-900 border border-slate-700 text-white text-xs outline-none focus:border-blue-500"
                         min="0"
                       />
                     </div>
@@ -283,7 +284,7 @@ export default function SavingsGoalsModal({
                         type="date"
                         value={newDate}
                         onChange={e => setNewDate(e.target.value)}
-                        className="w-full mt-1 px-3 py-1.5 rounded-md bg-slate-900 border border-slate-700 text-white text-xs outline-none focus:border-indigo-500"
+                        className="w-full mt-1 px-3 py-1.5 rounded-md bg-slate-900 border border-slate-700 text-white text-xs outline-none focus:border-blue-500"
                       />
                     </div>
                   </div>
@@ -297,7 +298,7 @@ export default function SavingsGoalsModal({
                           key={emoji}
                           type="button"
                           onClick={() => setNewEmoji(emoji)}
-                          className={`p-1 text-sm rounded transition-all ${newEmoji === emoji ? 'bg-indigo-600/20 border border-indigo-500 text-white' : 'hover:bg-slate-800 opacity-70'}`}
+                          className={`p-1 text-sm rounded transition-all ${newEmoji === emoji ? 'bg-blue-600/20 border border-blue-500 text-white' : 'hover:bg-slate-800 opacity-70'}`}
                         >
                           {emoji}
                         </button>
@@ -373,7 +374,7 @@ export default function SavingsGoalsModal({
                               setDepositModalGoal(goal)
                               setDepositAmount("100")
                             }}
-                            className="px-2.5 py-1 rounded-md bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-medium flex items-center gap-1 transition-colors"
+                            className="px-2.5 py-1 rounded-md bg-blue-600 hover:bg-blue-500 text-white text-xs font-medium flex items-center gap-1 transition-colors"
                             title="Add money to this goal"
                           >
                             <Plus className="h-3 w-3" /> Deposit
@@ -392,10 +393,10 @@ export default function SavingsGoalsModal({
                       <div className="space-y-1.5">
                         <div className="flex justify-between text-xs font-mono-nums">
                           <span className="text-white font-semibold">
-                            {currencySymbol}{Math.round(current * multiplier).toLocaleString()}
+                            {currencySymbol}{formatNumber(Math.round(current * multiplier), currencySymbol, 0, 0)}
                           </span>
                           <span className="text-slate-400">
-                            {progress}% of {currencySymbol}{Math.round(target * multiplier).toLocaleString()}
+                            {progress}% of {currencySymbol}{formatNumber(Math.round(target * multiplier), currencySymbol, 0, 0)}
                           </span>
                         </div>
 
@@ -453,7 +454,7 @@ export default function SavingsGoalsModal({
                           value={depositAmount}
                           onChange={e => setDepositAmount(e.target.value)}
                           placeholder="100"
-                          className="w-full pl-8 pr-3 py-1.5 rounded-md bg-slate-900 border border-slate-700 text-white font-mono-nums text-sm outline-none focus:border-indigo-500"
+                          className="w-full pl-8 pr-3 py-1.5 rounded-md bg-slate-900 border border-slate-700 text-white font-mono-nums text-sm outline-none focus:border-blue-500"
                         />
                       </div>
 

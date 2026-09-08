@@ -3,7 +3,7 @@ const Expense = require("../models/Expense");
 //POST
 const createExpense = async (req, res) => {
   try {
-    const { title, amount, category, date } = req.body;
+    const { title, amount, category, date, type, isRecurring } = req.body;
 
     if (!title || !amount || !category || !date) {
       return res.status(400).json({ message: "All fields are required" });
@@ -13,7 +13,9 @@ const createExpense = async (req, res) => {
       title,
       amount,
       category,
-      date
+      date,
+      type: type || 'expense',
+      isRecurring: isRecurring || false
     });
 
     res.status(201).json(expense);
@@ -48,7 +50,7 @@ const getExpenseById = async(req,res) => {
 //PUT - by ID
 const updateExpense = async(req,res) => {
   try{
-    const {title, amount, category, date} = req.body;
+    const {title, amount, category, date, type, isRecurring} = req.body;
 
     const expense = await Expense.findById(req.params.id);
     if(!expense){
@@ -59,6 +61,8 @@ const updateExpense = async(req,res) => {
     expense.amount = amount || expense.amount;
     expense.category = category || expense.category;
     expense.date = date || expense.date;
+    if (type !== undefined) expense.type = type;
+    if (isRecurring !== undefined) expense.isRecurring = isRecurring;
 
     const updatedExpense = await expense.save();
     res.status(200).json(updatedExpense);

@@ -38,14 +38,14 @@ export function ToastProvider({ children }) {
                 toast.type === "error"
                   ? "bg-[#0f1523] border-rose-500/30 text-rose-200"
                   : toast.type === "info"
-                  ? "bg-[#0f1523] border-indigo-500/30 text-slate-200"
+                  ? "bg-[#0f1523] border-blue-500/30 text-slate-200"
                   : "bg-[#0f1523] border-emerald-500/30 text-emerald-200"
               }`}
             >
               {toast.type === "error" ? (
                 <AlertCircle className="h-5 w-5 text-rose-400 shrink-0 mt-0.5" />
               ) : toast.type === "info" ? (
-                <Info className="h-5 w-5 text-indigo-400 shrink-0 mt-0.5" />
+                <Info className="h-5 w-5 text-blue-400 shrink-0 mt-0.5" />
               ) : (
                 <CheckCircle2 className="h-5 w-5 text-emerald-400 shrink-0 mt-0.5" />
               )}

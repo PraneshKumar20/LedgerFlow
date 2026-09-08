@@ -42,7 +42,7 @@ export default function AppHeader({
   const current = titles[activeTab] || titles.overview
 
   return (
-    <header className="hidden lg:flex items-center justify-between pb-5 border-b border-slate-800 mb-6">
+    <header className="hidden lg:flex items-center justify-between pb-8 border-b border-slate-800 mb-8">
       <div>
         <div className="flex items-center gap-3">
           <h1 className="text-[32px] sm:text-[36px] font-bold text-white tracking-[-0.035em] leading-tight">
@@ -53,7 +53,7 @@ export default function AppHeader({
             LIVE
           </div>
         </div>
-        <p className="text-[13px] sm:text-sm text-slate-400 mt-1 font-medium leading-relaxed">{current.subtitle}</p>
+        <p className="text-[13px] sm:text-sm text-slate-400 mt-2 font-medium leading-relaxed">{current.subtitle}</p>
       </div>
 
       <div className="flex items-center gap-2.5">
@@ -62,7 +62,7 @@ export default function AppHeader({
         {/* New Transaction Button */}
         <button
           onClick={onOpenAddModal}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold tracking-wide transition-colors cursor-pointer"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold tracking-wide transition-colors cursor-pointer"
         >
           <Plus className="h-3.5 w-3.5" />
           <span>New Transaction</span>

@@ -16,19 +16,10 @@ import {
 } from "lucide-react"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts"
 import AnimatedCounter from "../ui/AnimatedCounter"
+import { formatNumber, formatCompactNumber } from "../../utils/formatUtils"
+import { getCategoryStyle } from "../../utils/categoryColors"
 
-const COLORS = ['#6366f1', '#0ea5e9', '#10b981', '#f43f5e', '#f59e0b', '#8b5cf6', '#ec4899', '#64748b']
 
-const CATEGORY_BADGES = {
-  Food: "bg-amber-500/10 text-amber-400 border-amber-500/20",
-  Salary: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
-  Travel: "bg-sky-500/10 text-sky-400 border-sky-500/20",
-  Bills: "bg-slate-800 text-slate-300 border-slate-700",
-  Subscriptions: "bg-indigo-500/10 text-indigo-400 border-indigo-500/20",
-  Entertainment: "bg-purple-500/10 text-purple-400 border-purple-500/20",
-  Shopping: "bg-rose-500/10 text-rose-400 border-rose-500/20",
-  Other: "bg-slate-800 text-slate-400 border-slate-700"
-}
 
 export default function OverviewView({
   balance,
@@ -57,16 +48,7 @@ export default function OverviewView({
 
   const formatYAxis = (value) => {
     if (value === 0) return '0'
-    if (currSym === '₹') {
-      if (value >= 10000000) return `${currSym}${(value / 10000000).toFixed(1).replace(/\.0$/, '')}Cr`
-      if (value >= 100000) return `${currSym}${(value / 100000).toFixed(1).replace(/\.0$/, '')}L`
-      if (value >= 1000) return `${currSym}${(value / 1000).toFixed(1).replace(/\.0$/, '')}K`
-      return `${currSym}${value}`
-    } else {
-      if (value >= 1000000) return `${currSym}${(value / 1000000).toFixed(1).replace(/\.0$/, '')}M`
-      if (value >= 1000) return `${currSym}${(value / 1000).toFixed(1).replace(/\.0$/, '')}K`
-      return `${currSym}${value}`
-    }
+    return `${currSym}${formatCompactNumber(value, currSym)}`
   }
   const CustomTooltip = ({ active, payload, label, currSym }) => {
     if (active && payload && payload.length) {
@@ -79,16 +61,16 @@ export default function OverviewView({
           <div className="space-y-1.5">
             <div className="flex items-center justify-between gap-4 text-[13px]">
               <span className="text-slate-400 font-medium">Income</span>
-              <span className="text-emerald-400 font-mono-nums font-semibold">{currSym}{inc.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+              <span className="text-emerald-400 font-mono-nums font-semibold">{currSym}{formatNumber(inc, currSym)}</span>
             </div>
             <div className="flex items-center justify-between gap-4 text-[13px]">
               <span className="text-slate-400 font-medium">Expense</span>
-              <span className="text-rose-400 font-mono-nums font-semibold">{currSym}{exp.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+              <span className="text-rose-400 font-mono-nums font-semibold">{currSym}{formatNumber(exp, currSym)}</span>
             </div>
             <div className="border-t border-slate-700/80 pt-1.5 mt-1.5 flex items-center justify-between gap-4 text-[13px]">
               <span className="text-slate-300 font-medium">Net</span>
               <span className={`font-mono-nums font-bold ${net >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
-                {net < 0 ? '-' : '+'}{currSym}{Math.abs(net).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                {net < 0 ? '-' : '+'}{currSym}{formatNumber(Math.abs(net), currSym)}
               </span>
             </div>
           </div>
@@ -99,12 +81,12 @@ export default function OverviewView({
   }
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6 md:space-y-8">
       {/* Top Financial Stat Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 md:gap-6 lg:gap-8">
         
         {/* Total Net Balance Card */}
-        <div className="lg:col-span-2 finance-card p-5 flex flex-col justify-between">
+        <div className="lg:col-span-2 finance-card p-5 sm:p-6 lg:p-7 flex flex-col justify-between">
           <div className="flex items-center justify-between pb-2">
             <span className="text-[11px] font-semibold uppercase tracking-[0.06em] text-slate-500">
               Total Net Balance
@@ -114,7 +96,7 @@ export default function OverviewView({
             </div>
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-6">
             <div>
               <div className="text-[32px] sm:text-[40px] font-bold text-white tracking-[-0.035em] font-mono-nums leading-none">
                 <AnimatedCounter value={balance} prefix={currSym} />
@@ -147,7 +129,7 @@ export default function OverviewView({
             </div>
 
             {/* Income & Expense Subtotals */}
-            <div className="grid grid-cols-2 gap-4 pt-3 border-t border-slate-800">
+            <div className="grid grid-cols-2 gap-4 pt-5 mt-2 border-t border-slate-800">
               <div>
                 <p className="text-[11px] text-slate-500 font-semibold uppercase tracking-[0.06em] flex items-center gap-1.5">
                   <TrendingUp className="h-3.5 w-3.5 text-emerald-400" /> Monthly Income
@@ -179,7 +161,7 @@ export default function OverviewView({
                 onClick={() => setIsEnvelopeModalOpen(true)}
                 className="px-2.5 py-1 rounded text-[11px] font-semibold bg-slate-800 text-slate-300 hover:text-white border border-slate-700 transition-colors flex items-center gap-1.5 cursor-pointer"
               >
-                <Layers className="h-3 w-3 text-indigo-400" />
+                <Layers className="h-3 w-3 text-blue-400" />
                 <span>Envelopes</span>
               </button>
               <div className="p-1 rounded bg-slate-800 text-slate-300">
@@ -188,13 +170,13 @@ export default function OverviewView({
             </div>
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-6">
             <div>
               <div className="text-[32px] sm:text-[40px] font-bold text-white tracking-[-0.035em] font-mono-nums leading-none">
                 <AnimatedCounter value={budgetPercent} decimals={0} suffix="%" />
               </div>
               <p className="text-[13px] sm:text-[14px] text-slate-400 font-medium mt-1.5 leading-relaxed">
-                {currSym}{Math.round(totalExpense).toLocaleString('en-US')} spent of {currSym}{Math.round(budgetLimit * multiplier).toLocaleString('en-US')} monthly allowance
+                {currSym}{formatNumber(Math.round(totalExpense), currSym, 0, 0)} spent of {currSym}{formatNumber(Math.round(budgetLimit * multiplier), currSym, 0, 0)} monthly allowance
               </p>
             </div>
 
@@ -206,8 +188,8 @@ export default function OverviewView({
                 </span>
                 <span className="text-slate-400 font-mono-nums">
                   {totalExpense <= budgetLimit * multiplier 
-                    ? `${currSym}${Math.round((budgetLimit * multiplier) - totalExpense).toLocaleString('en-US')} remaining`
-                    : `${currSym}${Math.round(totalExpense - (budgetLimit * multiplier)).toLocaleString('en-US')} over budget`}
+                    ? `${currSym}${formatNumber(Math.round((budgetLimit * multiplier) - totalExpense), currSym, 0, 0)} remaining`
+                    : `${currSym}${formatNumber(Math.round(totalExpense - (budgetLimit * multiplier)), currSym, 0, 0)} over budget`}
                 </span>
               </div>
               <div className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
@@ -225,7 +207,7 @@ export default function OverviewView({
             </div>
 
             {/* Subtotals & Target Control */}
-            <div className="grid grid-cols-2 gap-4 pt-3 border-t border-slate-800">
+            <div className="grid grid-cols-2 gap-4 pt-5 mt-2 border-t border-slate-800">
               <div>
                 <p className="text-[11px] text-slate-500 font-semibold uppercase tracking-[0.06em] flex items-center gap-1.5">
                   {totalExpense <= budgetLimit * multiplier ? (
@@ -242,17 +224,17 @@ export default function OverviewView({
                   totalExpense <= budgetLimit * multiplier ? "text-emerald-400" : "text-rose-400"
                 }`}>
                   {totalExpense <= budgetLimit * multiplier ? "+" : "-"}
-                  {currSym}{Math.round(Math.abs((budgetLimit * multiplier) - totalExpense)).toLocaleString('en-US')}
+                  {currSym}{formatNumber(Math.round(Math.abs((budgetLimit * multiplier) - totalExpense)), currSym, 0, 0)}
                 </p>
               </div>
               <div className="pl-4 border-l border-slate-800">
                 <p className="text-[11px] text-slate-500 font-semibold uppercase tracking-[0.06em] flex items-center justify-between">
                   <span className="flex items-center gap-1.5">
-                    <Target className="h-3.5 w-3.5 text-indigo-400" /> Monthly Limit
+                    <Target className="h-3.5 w-3.5 text-blue-400" /> Monthly Limit
                   </span>
                   <button
                     onClick={() => setActiveTab("budgets")}
-                    className="text-[11px] text-indigo-400 hover:text-indigo-300 font-normal lowercase tracking-normal flex items-center gap-0.5 cursor-pointer transition-colors"
+                    className="text-[11px] text-blue-400 hover:text-blue-300 font-normal lowercase tracking-normal flex items-center gap-0.5 cursor-pointer transition-colors"
                   >
                     manage <ChevronRight className="h-2.5 w-2.5" />
                   </button>
@@ -262,10 +244,13 @@ export default function OverviewView({
                     {currSym}
                   </span>
                   <input
-                    type="number"
-                    value={Number((budgetLimit * multiplier).toFixed(0))}
-                    onChange={(e) => setBudgetLimit((Number(e.target.value) || 0) / multiplier)}
-                    className="w-28 bg-transparent text-[20px] sm:text-[24px] font-semibold text-white font-mono-nums leading-tight outline-none focus:text-indigo-400 transition-colors"
+                    type="text"
+                    value={formatNumber(Math.round(budgetLimit * multiplier), currSym, 0, 0)}
+                    onChange={(e) => {
+                      const val = e.target.value.replace(/[^0-9]/g, '')
+                      setBudgetLimit((Number(val) || 0) / multiplier)
+                    }}
+                    className="w-28 bg-transparent text-[20px] sm:text-[24px] font-semibold text-white font-mono-nums leading-tight outline-none focus:text-blue-400 transition-colors"
                   />
                 </div>
               </div>
@@ -275,12 +260,12 @@ export default function OverviewView({
       </div>
 
       {/* Cashflow Velocity & Expense Breakdown */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 md:gap-6 lg:gap-8">
         {/* 7-Day Cashflow Velocity */}
-        <div className="lg:col-span-2 finance-card p-5">
+        <div className="lg:col-span-2 finance-card p-5 sm:p-6 lg:p-7">
           <div className="flex items-center justify-between pb-3 border-b border-slate-800">
             <div className="flex items-center gap-2">
-              <div className="p-1 rounded bg-slate-800 text-indigo-400">
+              <div className="p-1 rounded bg-slate-800 text-blue-400">
                 <Activity className="h-3.5 w-3.5" />
               </div>
               <span className="text-sm font-semibold text-white tracking-tight">
@@ -299,7 +284,7 @@ export default function OverviewView({
             </div>
           </div>
 
-          <div className="h-[180px] pt-4">
+          <div className="h-[220px] sm:h-[240px] pt-6 pb-2">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={trendData} margin={{ top: 0, right: 10, left: -10, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
@@ -331,10 +316,10 @@ export default function OverviewView({
         </div>
 
         {/* Expense Category Donut */}
-        <div className="finance-card p-5 flex flex-col justify-between">
+        <div className="finance-card p-5 sm:p-6 lg:p-7 flex flex-col justify-between">
           <div className="flex items-center justify-between pb-3 border-b border-slate-800">
             <div className="flex items-center gap-2">
-              <div className="p-1 rounded bg-slate-800 text-indigo-400">
+              <div className="p-1 rounded bg-slate-800 text-blue-400">
                 <PieIcon className="h-3.5 w-3.5" />
               </div>
               <span className="text-sm font-semibold text-white tracking-tight">
@@ -345,7 +330,7 @@ export default function OverviewView({
 
           {categoryData.length > 0 ? (
             <div className="flex flex-col justify-between flex-1 pt-2">
-              <div className="relative w-full h-[180px] flex items-center justify-center">
+              <div className="relative w-full h-[220px] flex items-center justify-center">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
@@ -364,7 +349,7 @@ export default function OverviewView({
                       {categoryData.map((entry, index) => (
                         <Cell 
                           key={`cell-${index}`} 
-                          fill={COLORS[index % COLORS.length]} 
+                          fill={getCategoryStyle(entry.name).base} 
                           opacity={activeCategoryIndex === null || activeCategoryIndex === index ? 1 : 0.4}
                           className="cursor-pointer transition-opacity"
                         />
@@ -381,7 +366,7 @@ export default function OverviewView({
                         {categoryData[activeCategoryIndex].name}
                       </span>
                       <span className="text-sm font-bold text-white font-mono leading-tight">
-                        {currSym}{categoryData[activeCategoryIndex].value.toLocaleString('en-US', { maximumFractionDigits: 0 })}
+                        {currSym}{formatNumber(categoryData[activeCategoryIndex].value, currSym, 0, 0)}
                       </span>
                       <span className="text-[10px] text-slate-400 mt-0.5">
                         {totalCategoryExpense > 0 ? ((categoryData[activeCategoryIndex].value / totalCategoryExpense) * 100).toFixed(0) : 0}%
@@ -393,7 +378,7 @@ export default function OverviewView({
                         TOTAL SPENT
                       </span>
                       <span className="text-sm font-bold text-white font-mono leading-tight">
-                        {currSym}{totalCategoryExpense.toLocaleString('en-US', { maximumFractionDigits: 0 })}
+                        {currSym}{formatNumber(totalCategoryExpense, currSym, 0, 0)}
                       </span>
                       <span className="text-[10px] text-slate-400 mt-0.5">
                         {categoryData.length} categories
@@ -404,9 +389,9 @@ export default function OverviewView({
               </div>
 
               {/* Category Pills */}
-              <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 pt-4 mt-2 border-t border-slate-800/80">
+              <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-3 pt-4 mt-4 border-t border-slate-800/80">
                 {categoryData.slice(0, 5).map((cat, idx) => {
-                  const color = COLORS[idx % COLORS.length]
+                  const color = getCategoryStyle(cat.name).base
                   const percent = totalCategoryExpense > 0 ? ((cat.value / totalCategoryExpense) * 100).toFixed(0) : 0
                   const isHovered = activeCategoryIndex === idx
 
@@ -436,7 +421,7 @@ export default function OverviewView({
       </div>
 
       {/* Recent Transactions List */}
-      <div className="finance-card p-5">
+      <div className="finance-card p-5 sm:p-6 lg:p-7">
         <div className="flex items-center justify-between pb-3 border-b border-slate-800">
           <div>
             <h2 className="text-[19px] font-bold text-white tracking-tight">
@@ -447,7 +432,7 @@ export default function OverviewView({
 
           <button
             onClick={() => setActiveTab("transactions")}
-            className="flex items-center gap-1 text-xs font-semibold text-indigo-400 hover:text-indigo-300 transition-colors cursor-pointer"
+            className="flex items-center gap-1 text-xs font-semibold text-blue-400 hover:text-blue-300 transition-colors cursor-pointer"
           >
             <span>View All ({displayExpenses.length})</span>
             <ArrowRight className="h-3 w-3" />
@@ -462,7 +447,7 @@ export default function OverviewView({
           ) : (
             recentTransactions.map((tx) => {
               const isIncome = tx.type === "income"
-              const badgeClass = CATEGORY_BADGES[tx.category] || CATEGORY_BADGES.Other
+              const badgeClass = getCategoryStyle(tx.category).badge
 
               return (
                 <div 
@@ -495,7 +480,7 @@ export default function OverviewView({
 
                   <div className="flex items-center gap-3">
                     <span className={`font-mono-nums font-semibold text-[13px] ${isIncome ? 'text-emerald-400' : 'text-rose-400'}`}>
-                      {isIncome ? '+' : '-'}{currSym}{Number(tx.amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      {isIncome ? '+' : '-'}{currSym}{formatNumber(tx.amount, currSym)}
                     </span>
                     <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button

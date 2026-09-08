@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react"
+import { formatNumber } from "../../utils/formatUtils"
 import { motion, AnimatePresence } from "framer-motion"
 import { Radio, Repeat, Clock, Calendar, DollarSign, AlertCircle, CheckCircle2, X, Flame, CreditCard, Plus, Sparkles, ChevronRight, Bell } from "lucide-react"
 import AnimatedCounter from "../ui/AnimatedCounter"
@@ -120,7 +121,7 @@ export default function SubscriptionRadarModal({
 
               <div className="space-y-1 border-t sm:border-t-0 sm:border-l border-slate-800 pt-2 sm:pt-0 sm:pl-3">
                 <div className="flex items-center gap-1.5 text-[11px] uppercase font-semibold tracking-[0.06em] text-slate-500">
-                  <Clock className="h-3.5 w-3.5 text-indigo-400" />
+                  <Clock className="h-3.5 w-3.5 text-blue-400" />
                   <span>Annualized Cost</span>
                 </div>
                 <p className="text-xl font-semibold text-white font-mono-nums">
@@ -147,7 +148,7 @@ export default function SubscriptionRadarModal({
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
-                  <Repeat className="h-3.5 w-3.5 text-indigo-400" />
+                  <Repeat className="h-3.5 w-3.5 text-blue-400" />
                   <span>Active Recurring Subscriptions ({recurringSubscriptions.length})</span>
                 </h3>
                 <button
@@ -155,7 +156,7 @@ export default function SubscriptionRadarModal({
                     onClose()
                     onOpenAddModal()
                   }}
-                  className="inline-flex items-center gap-1 text-xs font-semibold text-indigo-400 hover:text-indigo-300 transition-colors cursor-pointer"
+                  className="inline-flex items-center gap-1 text-xs font-semibold text-blue-400 hover:text-blue-300 transition-colors cursor-pointer"
                 >
                   <Plus className="h-3.5 w-3.5" />
                   <span>Add New</span>
@@ -198,7 +199,7 @@ export default function SubscriptionRadarModal({
                       {/* Renewal Countdown Badge & Cost */}
                       <div className="text-right space-y-1">
                         <p className="font-mono-nums font-semibold text-sm text-white">
-                          {currencySymbol}{sub.amount.toFixed(2)}
+                          {currencySymbol}{formatNumber(sub.amount, currencySymbol)}
                           <span className="text-xs text-slate-400 font-normal">/mo</span>
                         </p>
                         <span className={`inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded border ${
@@ -219,11 +220,11 @@ export default function SubscriptionRadarModal({
             {/* Modal Footer */}
             <div className="pt-2 border-t border-slate-800 flex items-center justify-between">
               <p className="text-[11px] text-slate-400">
-                Canceling just one $15/mo subscription frees up {currencySymbol}{(15 * multiplier * 12).toFixed(0)} every year.
+                Canceling just one $15/mo subscription frees up {currencySymbol}{formatNumber(15 * multiplier * 12, currencySymbol, 0, 0)} every year.
               </p>
               <button
                 onClick={onClose}
-                className="px-4 py-1.5 rounded-md bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-medium transition-colors cursor-pointer"
+                className="px-4 py-1.5 rounded-md bg-blue-600 hover:bg-blue-500 text-white text-xs font-medium transition-colors cursor-pointer"
               >
                 Done
               </button>
