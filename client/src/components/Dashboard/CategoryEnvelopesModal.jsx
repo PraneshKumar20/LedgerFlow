@@ -1,19 +1,8 @@
 import { useState, useMemo } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { Layers, X, Sparkles, AlertCircle, CheckCircle2, DollarSign, TrendingUp, RotateCcw, Sliders, ShieldAlert } from "lucide-react"
-import AnimatedCounter from "../ui/AnimatedCounter"
+import { Layers, X, CheckCircle2, ShieldAlert } from "lucide-react"
 import { formatNumber } from "../../utils/formatUtils"
 import { getCategoryStyle } from "../../utils/categoryColors"
-
-const DEFAULT_ENVELOPES = {
-  Food: 450,
-  Travel: 250,
-  Bills: 350,
-  Subscriptions: 100,
-  Entertainment: 150,
-  Shopping: 200,
-  Other: 150
-}
 
 export default function CategoryEnvelopesModal({ 
   isOpen, 
@@ -21,10 +10,33 @@ export default function CategoryEnvelopesModal({
   expenses = [], 
   currencySymbol = "₹", 
   multiplier = 1,
-  categoryBudgets,
+  categoryBudgets = {}, 
   onUpdateCategoryBudget
 }) {
-  const [editingCategory, setEditingCategory] = useState(null)
+  const [editingValues, setEditingValues] = useState({})
+
+  const handleCommitCategory = (category) => {
+    if (editingValues[category] === undefined) return
+    const val = editingValues[category].replace(/[^0-9]/g, '')
+    const numVal = (Number(val) || 0) / multiplier
+    onUpdateCategoryBudget(category, numVal)
+    setEditingValues(prev => {
+      const copy = { ...prev }
+      delete copy[category]
+      return copy
+    })
+  }
+
+  const handleDone = () => {
+    // Commit any unsaved edits quietly before closing
+    Object.entries(editingValues).forEach(([cat, val]) => {
+      const clean = val.replace(/[^0-9]/g, '')
+      const numVal = (Number(clean) || 0) / multiplier
+      onUpdateCategoryBudget(cat, numVal)
+    })
+    setEditingValues({})
+    onClose()
+  }
 
   // Calculate actual spend per category
   const categorySpending = useMemo(() => {
@@ -59,12 +71,12 @@ export default function CategoryEnvelopesModal({
       }
     })
 
-    const totalAllocated = Object.values(categoryBudgets).reduce((sum, v) => sum + (v * multiplier), 0)
-    const totalSpentInEnvelopes = list.reduce((sum, item) => sum + item.spent, 0)
-    const overCount = list.filter(item => item.isOver).length
+    const totalAllocated = Object.values(categoryBudgets).reduce((a, b) => a + b, 0) * multiplier
+    const totalSpentInEnvelopes = list.reduce((a, b) => a + b.spent, 0)
+    const overCount = list.filter(i => i.isOver).length
 
     return {
-      list: list.sort((a, b) => b.rawPercent - a.rawPercent),
+      list,
       totalAllocated,
       totalSpentInEnvelopes,
       overCount
@@ -74,14 +86,14 @@ export default function CategoryEnvelopesModal({
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-hidden">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm"
+            className="fixed inset-0 bg-surface-overlay backdrop-blur-sm"
           />
 
           {/* Modal Container */}
@@ -90,28 +102,28 @@ export default function CategoryEnvelopesModal({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.98, y: 10 }}
             transition={{ duration: 0.2, ease: "easeOut" }}
-            className="relative w-full max-w-2xl bg-[#0f1523] border border-slate-800 rounded-2xl shadow-2xl overflow-hidden z-10 flex flex-col max-h-[90vh]"
+            className="relative w-full max-w-2xl bg-surface-2 border border-border-default rounded-modal shadow-elevation-modal overflow-hidden z-10 flex flex-col max-h-[90vh]"
           >
             <div className="p-6 flex flex-col h-full min-h-0 space-y-6">
               
               {/* Header */}
-              <div className="flex items-start justify-between border-b border-slate-800/80 pb-5 shrink-0">
+              <div className="flex items-start justify-between border-b border-border-default pb-5 shrink-0">
                 <div>
                   <div className="flex items-center gap-2.5">
-                    <div className="p-2 rounded-xl bg-blue-500/10 text-blue-400 border border-blue-500/20 shadow-sm">
+                    <div className="p-2 rounded-control bg-brand/10 text-brand border border-brand/20 shadow-elevation-sm">
                       <Layers className="h-5 w-5" />
                     </div>
-                    <h2 className="text-xl font-bold text-white tracking-tight">
+                    <h2 className="text-xl font-bold text-text-primary tracking-tight">
                       Category Budget Envelopes
                     </h2>
                   </div>
-                  <p className="text-[13px] text-slate-400 font-medium mt-1.5 leading-relaxed">
-                    Set target limits per category to maintain balanced cashflow.
+                  <p className="text-[13px] text-text-secondary font-medium mt-1.5 leading-relaxed">
+                    Set target limits per category. Press <kbd className="px-1.5 py-0.5 rounded bg-surface-3 border border-border-subtle text-[11px] font-mono text-text-primary">Enter</kbd> or click Save to apply.
                   </p>
                 </div>
                 <button
                   onClick={onClose}
-                  className="p-1.5 text-slate-400 hover:text-slate-200 rounded-md hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 transition-all cursor-pointer"
+                  className="p-1.5 text-text-secondary hover:text-text-primary rounded-control hover:bg-surface-hover focus-ring transition-all cursor-pointer"
                   title="Close"
                 >
                   <X className="h-5 w-5" />
@@ -119,22 +131,22 @@ export default function CategoryEnvelopesModal({
               </div>
 
               {/* Summary Ribbon */}
-              <div className="grid grid-cols-3 gap-3 p-4 rounded-xl bg-slate-900/60 border border-slate-800/80 shrink-0">
+              <div className="grid grid-cols-3 gap-3 p-4 rounded-card bg-surface-1 border border-border-default shrink-0">
                 <div>
-                  <span className="text-[10px] uppercase font-semibold tracking-wider text-slate-500">Total Allocated</span>
-                  <p className="text-[22px] leading-tight font-bold text-white font-mono-nums mt-1">
+                  <span className="text-[10px] uppercase font-semibold tracking-wider text-text-muted">Total Allocated</span>
+                  <p className="text-[22px] leading-tight font-bold text-text-primary font-mono-nums mt-1">
                     {currencySymbol}{formatNumber(envelopeStats.totalAllocated, currencySymbol, 0, 0)}
                   </p>
                 </div>
                 <div>
-                  <span className="text-[10px] uppercase font-semibold tracking-wider text-slate-500">Envelopes Spent</span>
-                  <p className="text-[22px] leading-tight font-bold text-white font-mono-nums mt-1">
+                  <span className="text-[10px] uppercase font-semibold tracking-wider text-text-muted">Envelopes Spent</span>
+                  <p className="text-[22px] leading-tight font-bold text-text-primary font-mono-nums mt-1">
                     {currencySymbol}{formatNumber(envelopeStats.totalSpentInEnvelopes, currencySymbol, 0, 0)}
                   </p>
                 </div>
                 <div>
-                  <span className="text-[10px] uppercase font-semibold tracking-wider text-slate-500">Threshold Status</span>
-                  <p className={`text-sm font-semibold mt-1.5 flex items-center gap-1.5 ${envelopeStats.overCount > 0 ? 'text-rose-400' : 'text-emerald-400'}`}>
+                  <span className="text-[10px] uppercase font-semibold tracking-wider text-text-muted">Threshold Status</span>
+                  <p className={`text-sm font-semibold mt-1.5 flex items-center gap-1.5 ${envelopeStats.overCount > 0 ? 'text-negative' : 'text-positive'}`}>
                     {envelopeStats.overCount > 0 ? (
                       <>
                         <ShieldAlert className="h-4 w-4" />
@@ -152,87 +164,116 @@ export default function CategoryEnvelopesModal({
 
               {/* Envelopes List */}
               <div className="flex-1 min-h-0 overflow-y-auto pr-2 pb-1 space-y-4">
-                {envelopeStats.list.map((item) => (
-                  <div 
-                    key={item.category}
-                    className="p-5 rounded-xl bg-slate-900/40 border border-slate-800/80 hover:border-slate-700/80 transition-colors space-y-4 group"
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2.5">
-                        <span className={`px-2 py-0.5 rounded text-xs font-semibold border ${item.theme.badge}`}>
-                          {item.category}
-                        </span>
-                        <span className="text-xs text-slate-400 font-medium">
-                          {item.isOver ? (
-                            <span className="text-rose-400 flex items-center gap-1.5">
-                              Over budget by {currencySymbol}{formatNumber(Math.abs(item.remaining), currencySymbol, 0, 0)}
-                            </span>
-                          ) : (
-                            <span>{currencySymbol}{formatNumber(item.remaining, currencySymbol, 0, 0)} remaining</span>
-                          )}
-                        </span>
-                      </div>
-                    </div>
+                {envelopeStats.list.map((item) => {
+                  const isDirty = editingValues[item.category] !== undefined
+                  const displayValue = isDirty 
+                    ? editingValues[item.category] 
+                    : formatNumber(Math.round(item.limit), currencySymbol, 0, 0)
 
-                    <div className="flex items-end justify-between">
-                      <div>
-                        <div className="text-[10px] uppercase font-semibold text-slate-500 tracking-wider mb-1">Spent</div>
-                        <div className="text-[22px] font-mono-nums font-bold text-white tracking-tight leading-none">
-                          {currencySymbol}{formatNumber(item.spent, currencySymbol, 0, 0)}
+                  return (
+                    <div 
+                      key={item.category}
+                      className="p-5 rounded-card bg-surface-1 border border-border-default hover:border-border-strong transition-colors space-y-4 group"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2.5">
+                          <span className={`px-2 py-0.5 rounded-badge text-xs font-semibold border ${item.theme.badge}`}>
+                            {item.category}
+                          </span>
+                          <span className="text-xs text-text-secondary font-medium">
+                            {item.isOver ? (
+                              <span className="text-negative flex items-center gap-1.5">
+                                Over budget by {currencySymbol}{formatNumber(Math.abs(item.remaining), currencySymbol, 0, 0)}
+                              </span>
+                            ) : (
+                              <span>{currencySymbol}{formatNumber(item.remaining, currencySymbol, 0, 0)} remaining</span>
+                            )}
+                          </span>
                         </div>
                       </div>
 
-                      <div className="flex flex-col items-end">
-                        <div className="text-[10px] uppercase font-semibold text-slate-500 tracking-wider mb-1 text-right">Target</div>
-                        <div className="relative group-hover:border-slate-600 border border-slate-700 rounded-lg bg-slate-950 transition-colors focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500 flex items-center h-9 px-2.5 shadow-sm">
-                          <span className="text-sm font-mono-nums text-slate-400 font-medium mr-0.5">{currencySymbol}</span>
-                          <input
-                            type="text"
-                            value={formatNumber(Math.round(item.limit), currencySymbol, 0, 0)}
-                            onChange={(e) => {
-                              const val = e.target.value.replace(/[^0-9]/g, '')
-                              onUpdateCategoryBudget(item.category, (Number(val) || 0) / multiplier)
-                            }}
-                            className="w-[84px] bg-transparent text-[15px] font-mono-nums font-bold text-white text-right outline-none placeholder:text-slate-600"
-                            placeholder="0"
+                      <div className="flex items-end justify-between">
+                        <div>
+                          <div className="text-[10px] uppercase font-semibold text-text-muted tracking-wider mb-1">Spent</div>
+                          <div className="text-[22px] font-mono-nums font-bold text-text-primary tracking-tight leading-none">
+                            {currencySymbol}{formatNumber(item.spent, currencySymbol, 0, 0)}
+                          </div>
+                        </div>
+
+                        <div className="flex flex-col items-end">
+                          <div className="text-[10px] uppercase font-semibold text-text-muted tracking-wider mb-1 text-right">Target</div>
+                          <div className="flex items-center gap-1.5">
+                            <div className={`relative border rounded-control bg-surface-3 transition-all focus-ring flex items-center h-9 px-2.5 shadow-elevation-sm ${
+                              isDirty ? 'border-brand ring-1 ring-brand/40' : 'border-border-default'
+                            }`}>
+                              <span className="text-sm font-mono-nums text-text-muted font-medium mr-0.5">{currencySymbol}</span>
+                              <input
+                                type="text"
+                                value={displayValue}
+                                onChange={(e) => {
+                                  const val = e.target.value.replace(/[^0-9]/g, '')
+                                  setEditingValues(prev => ({ ...prev, [item.category]: val }))
+                                }}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') {
+                                    e.preventDefault()
+                                    handleCommitCategory(item.category)
+                                  }
+                                }}
+                                className="w-[84px] bg-transparent text-[15px] font-mono-nums font-bold text-text-primary text-right outline-none placeholder:text-text-muted"
+                                placeholder="0"
+                              />
+                            </div>
+
+                            {isDirty && (
+                              <button
+                                type="button"
+                                onClick={() => handleCommitCategory(item.category)}
+                                className="h-9 px-2.5 rounded-control bg-brand hover:bg-brand-hover active:bg-brand-active text-white text-xs font-semibold flex items-center gap-1 transition-all shadow-elevation-sm cursor-pointer shrink-0"
+                                title="Save Target (Enter)"
+                              >
+                                <span>Save</span>
+                                <span className="text-[10px] font-mono opacity-80">↵</span>
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Progress Bar */}
+                      <div className="pt-1.5 space-y-2">
+                        <div className="h-1.5 w-full bg-surface-inset rounded-full overflow-hidden flex">
+                          <motion.div
+                            initial={{ width: 0 }}
+                            animate={{ width: `${item.percent}%` }}
+                            transition={{ duration: 0.8, ease: "easeOut" }}
+                            className={`h-full rounded-full transition-colors ${
+                              item.rawPercent > 100 
+                                ? 'bg-negative' 
+                                : item.rawPercent > 80 
+                                  ? 'bg-warning' 
+                                  : item.theme.bg
+                            }`}
                           />
                         </div>
+                        <div className="flex justify-between items-center text-[11px] text-text-secondary font-medium px-0.5">
+                          <span>Usage: {formatNumber(item.rawPercent, currencySymbol, 0, 0)}%</span>
+                          <span>Target: {currencySymbol}{formatNumber(item.limit, currencySymbol, 0, 0)}</span>
+                        </div>
                       </div>
                     </div>
-
-                    {/* Progress Bar */}
-                    <div className="pt-1.5 space-y-2">
-                      <div className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden flex">
-                        <motion.div
-                          initial={{ width: 0 }}
-                          animate={{ width: `${item.percent}%` }}
-                          transition={{ duration: 0.8, ease: "easeOut" }}
-                          className={`h-full rounded-full transition-colors ${
-                            item.rawPercent > 100 
-                              ? 'bg-rose-500' 
-                              : item.rawPercent > 80 
-                                ? 'bg-amber-500' 
-                                : item.theme.bg
-                          }`}
-                        />
-                      </div>
-                      <div className="flex justify-between items-center text-[11px] text-slate-400 font-medium px-0.5">
-                        <span>Usage: {formatNumber(item.rawPercent, currencySymbol, 0, 0)}%</span>
-                        <span>Target: {currencySymbol}{formatNumber(item.limit, currencySymbol, 0, 0)}</span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
 
               {/* Modal Footer */}
-              <div className="pt-5 border-t border-slate-800/80 flex items-center justify-between shrink-0">
-                <p className="text-[11px] font-medium text-slate-500 max-w-[260px] leading-relaxed">
-                  Category envelope targets scale automatically with your active currency.
+              <div className="pt-5 border-t border-border-default flex items-center justify-between shrink-0">
+                <p className="text-[11px] font-medium text-text-muted max-w-[260px] leading-relaxed">
+                  Press Enter or click Save next to an amount to update its target.
                 </p>
                 <button
-                  onClick={onClose}
-                  className="px-6 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-[13px] font-semibold transition-colors shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0f1523] cursor-pointer"
+                  onClick={handleDone}
+                  className="px-6 py-2.5 rounded-control bg-brand hover:bg-brand-hover active:bg-brand-active text-white text-[13px] font-semibold transition-colors shadow-elevation-sm focus-ring cursor-pointer"
                 >
                   Done
                 </button>

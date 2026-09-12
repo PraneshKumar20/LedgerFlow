@@ -4,53 +4,85 @@
 
 @layer base {
   :root {
-    --background: 222 47% 6%;
-    --foreground: 210 40% 98%;
+    /* Surfaces */
+    --background: #090D16;
+    --surface-1: #0F1523;
+    --surface-2: #141B2C;
+    --surface-3: #1B2438;
+    --surface-inset: #0B1120;
+    --surface-hover: #182036;
+    --surface-selected: #0E1A3D;
+    --surface-overlay: rgba(0, 0, 0, 0.60);
 
-    --card: 222 47% 8%;
-    --card-foreground: 210 40% 98%;
+    /* Borders */
+    --border-subtle: #1B2436;
+    --border-default: #26314A;
+    --border-strong: #374260;
 
-    --popover: 222 47% 8%;
-    --popover-foreground: 210 40% 98%;
+    /* Brand - Sapphire */
+    --brand-primary: #3E63DD;
+    --brand-primary-hover: #3554C4;
+    --brand-primary-active: #2C468F;
+    --brand-primary-subtle: #0E1A3D;
+    --brand-primary-focus: #5B82F5;
 
-    --primary: 226 70% 55.5%;
-    --primary-foreground: 210 40% 98%;
+    /* Semantic Financial */
+    --positive: #22C55E;
+    --positive-subtle: rgba(34, 197, 94, 0.10);
+    --positive-border: rgba(34, 197, 94, 0.20);
+    --negative: #F5455C;
+    --negative-subtle: rgba(245, 69, 92, 0.10);
+    --negative-border: rgba(245, 69, 92, 0.20);
+    --warning: #F5A524;
+    --warning-subtle: rgba(245, 165, 36, 0.10);
+    --warning-border: rgba(245, 165, 36, 0.20);
+    --info: #3E9CDD;
+    --info-subtle: rgba(62, 156, 221, 0.10);
+    --info-border: rgba(62, 156, 221, 0.20);
 
-    --secondary: 217 33% 14%;
-    --secondary-foreground: 210 40% 98%;
+    /* Text Hierarchy */
+    --text-primary: #F8FAFC;
+    --text-secondary: #94A3B8;
+    --text-muted: #64748B;
+    --text-disabled: #475569;
+    --text-inverse: #090D16;
 
-    --muted: 217 33% 12%;
-    --muted-foreground: 215 20% 60%;
+    /* Elevations */
+    --elevation-none: none;
+    --elevation-sm: 0 1px 2px 0 rgba(0,0,0,0.35);
+    --elevation-md: 0 4px 12px -2px rgba(0,0,0,0.45);
+    --elevation-lg: 0 12px 32px -8px rgba(0,0,0,0.55);
+    --elevation-modal: 0 24px 64px -12px rgba(0,0,0,0.65);
 
-    --accent: 217 33% 14%;
-    --accent-foreground: 210 40% 98%;
-
-    --destructive: 347 77% 50%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 217 33% 14%;
-    --input: 217 33% 14%;
-    --ring: 226 70% 55.5%;
-
-    --radius: 0.625rem;
+    /* Radii */
+    --radius-badge: 4px;
+    --radius-control: 6px;
+    --radius-card: 10px;
+    --radius-modal: 14px;
+    --radius-hero: 20px;
+    --radius-full: 9999px;
   }
-}
 
-@layer base {
   * {
-    @apply border-border;
+    border-color: var(--border-default);
   }
+
   body {
-    @apply bg-[#090d16] text-slate-100 antialiased overflow-x-hidden;
+    background-color: var(--background);
+    color: var(--text-primary);
     font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
   }
+
   code, kbd, samp, pre {
     font-family: 'Geist Mono', monospace;
   }
 }
 
-/* Purpose-driven Financial Data & Typography Utilities */
 @layer utilities {
+  /* Financial Data & Typography Utilities */
   .tabular-nums {
     font-variant-numeric: tabular-nums;
     font-feature-settings: "tnum";
@@ -63,7 +95,14 @@
     letter-spacing: -0.015em;
   }
 
-  /* Typography Hierarchy Standards */
+  /* V2 Typography Hierarchy */
+  .font-display {
+    font-size: 2.25rem; /* 36px */
+    line-height: 2.5rem;
+    font-weight: 800;
+    letter-spacing: -0.035em;
+  }
+
   .page-title {
     font-size: 1.875rem; /* 30px */
     line-height: 2.25rem;
@@ -93,28 +132,51 @@
     letter-spacing: 0.05em;
   }
 
-  /* Structured, calm financial cards - no glowing shadows, no neon gradients */
+  /* Financial numbers */
+  .financial-primary {
+    font-family: 'Geist Mono', monospace;
+    font-size: 1.5rem; /* 24px */
+    line-height: 2rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum";
+  }
+
+  .financial-secondary {
+    font-family: 'Geist Mono', monospace;
+    font-size: 0.875rem; /* 14px */
+    line-height: 1.25rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum";
+  }
+
+  /* Focus Ring */
+  .focus-ring {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-focus focus-visible:ring-offset-2 focus-visible:ring-offset-background;
+  }
+
+  /* Structured Financial Cards */
   .finance-card {
-    background-color: #0f1523;
-    border: 1px solid #1e293b;
-    border-radius: 0.625rem;
-    transition: border-color 0.15s ease;
+    background-color: var(--surface-1);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-card);
+    transition: border-color 0.15s ease, background-color 0.15s ease;
   }
 
   .finance-card:hover {
-    border-color: #334155;
+    border-color: var(--border-strong);
   }
 
-  /* Backwards compatibility for bento-card references */
   .bento-card {
-    background-color: #0f1523;
-    border: 1px solid #1e293b;
-    border-radius: 0.625rem;
-    transition: border-color 0.15s ease;
+    background-color: var(--surface-1);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-card);
+    transition: border-color 0.15s ease, background-color 0.15s ease;
   }
 
   .bento-card:hover {
-    border-color: #334155;
+    border-color: var(--border-strong);
   }
 
   /* Custom scrollbar */
@@ -126,10 +188,10 @@
     background: transparent;
   }
   ::-webkit-scrollbar-thumb {
-    background: #1e293b;
-    border-radius: 9999px;
+    background: var(--border-default);
+    border-radius: var(--radius-full);
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: #334155;
+    background: var(--border-strong);
   }
 }

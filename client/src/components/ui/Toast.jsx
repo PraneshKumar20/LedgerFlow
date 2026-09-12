@@ -9,7 +9,14 @@ export function ToastProvider({ children }) {
 
   const addToast = useCallback(({ title, message, type = "success", duration = 3500 }) => {
     const id = `${Date.now()}-${Math.random()}`
-    setToasts((prev) => [...prev, { id, title, message, type }])
+    setToasts((prev) => {
+      // Prevent duplicate toasts with the exact same title and message
+      const hasDuplicate = prev.some(t => t.title === title && t.message === message)
+      if (hasDuplicate) return prev
+      // Cap at 3 visible notifications so screen is never flooded
+      const trimmed = prev.length >= 3 ? prev.slice(prev.length - 2) : prev
+      return [...trimmed, { id, title, message, type }]
+    })
 
     if (duration > 0) {
       setTimeout(() => {
@@ -34,28 +41,28 @@ export function ToastProvider({ children }) {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 10, scale: 0.95 }}
               transition={{ duration: 0.15 }}
-              className={`pointer-events-auto p-3.5 rounded-lg border shadow-xl flex items-start gap-3 ${
+              className={`pointer-events-auto p-3.5 rounded-card border shadow-elevation-lg flex items-start gap-3 bg-surface-2 ${
                 toast.type === "error"
-                  ? "bg-[#0f1523] border-rose-500/30 text-rose-200"
+                  ? "border-negative/30 text-text-primary"
                   : toast.type === "info"
-                  ? "bg-[#0f1523] border-blue-500/30 text-slate-200"
-                  : "bg-[#0f1523] border-emerald-500/30 text-emerald-200"
+                  ? "border-info/30 text-text-primary"
+                  : "border-positive/30 text-text-primary"
               }`}
             >
               {toast.type === "error" ? (
-                <AlertCircle className="h-5 w-5 text-rose-400 shrink-0 mt-0.5" />
+                <AlertCircle className="h-5 w-5 text-negative shrink-0 mt-0.5" />
               ) : toast.type === "info" ? (
-                <Info className="h-5 w-5 text-blue-400 shrink-0 mt-0.5" />
+                <Info className="h-5 w-5 text-info shrink-0 mt-0.5" />
               ) : (
-                <CheckCircle2 className="h-5 w-5 text-emerald-400 shrink-0 mt-0.5" />
+                <CheckCircle2 className="h-5 w-5 text-positive shrink-0 mt-0.5" />
               )}
               <div className="flex-1 min-w-0">
-                {toast.title && <p className="text-xs font-bold text-white mb-0.5">{toast.title}</p>}
-                {toast.message && <p className="text-xs text-slate-300 leading-relaxed">{toast.message}</p>}
+                {toast.title && <p className="text-xs font-bold text-text-primary mb-0.5">{toast.title}</p>}
+                {toast.message && <p className="text-xs text-text-secondary leading-relaxed">{toast.message}</p>}
               </div>
               <button
                 onClick={() => removeToast(toast.id)}
-                className="text-slate-400 hover:text-white transition-colors p-1 -mr-1 -mt-1"
+                className="text-text-muted hover:text-text-primary transition-colors p-1 -mr-1 -mt-1"
                 aria-label="Dismiss notification"
               >
                 <X className="h-3.5 w-3.5" />

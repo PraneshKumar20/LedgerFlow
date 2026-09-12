@@ -1,7 +1,6 @@
 import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { 
-  Command, 
   Plus, 
   ChevronDown, 
   LogOut,
@@ -12,7 +11,6 @@ import {
 export default function AppHeader({
   activeTab,
   onOpenAddModal,
-  onOpenQuickAdd,
   currentUser,
   onLogout,
   isSidebarCollapsed,
@@ -46,12 +44,12 @@ export default function AppHeader({
   const current = titles[activeTab] || titles.overview
 
   return (
-    <header className="hidden lg:flex items-center justify-between pb-8 border-b border-slate-800 mb-8">
+    <header className="hidden lg:flex items-center justify-between mb-6">
       <div>
         <div className="flex items-center gap-3">
           <button
             onClick={onToggleSidebar}
-            className="p-2 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-slate-700 text-slate-400 hover:text-white transition-colors cursor-pointer"
+            className="p-2 rounded-lg bg-surface-1 hover:bg-surface-hover border border-border-default text-text-secondary hover:text-white transition-colors cursor-pointer"
             title={isSidebarCollapsed ? "Expand sidebar (Ctrl+B)" : "Collapse sidebar (Ctrl+B)"}
           >
             {isSidebarCollapsed ? (
@@ -60,26 +58,26 @@ export default function AppHeader({
               <PanelLeftClose className="h-4 w-4" />
             )}
           </button>
-          <h1 className="text-[32px] sm:text-[36px] font-bold text-white tracking-[-0.035em] leading-tight">
+          <h1 className="text-2xl sm:text-[28px] font-bold text-white tracking-tight leading-tight">
             {current.title}
           </h1>
-          <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-mono-nums font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-            LIVE
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-950/80 text-emerald-400 border border-emerald-800/60">
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.9)]" />
+            <span>LIVE</span>
           </div>
         </div>
-        <p className="text-[13px] sm:text-sm text-slate-400 mt-2 font-medium leading-relaxed pl-11">{current.subtitle}</p>
+        <p className="text-xs sm:text-sm text-text-secondary mt-1.5 font-normal leading-relaxed pl-11">
+          {current.subtitle}
+        </p>
       </div>
 
-      <div className="flex items-center gap-2.5">
-
-
+      <div className="flex items-center gap-3">
         {/* New Transaction Button */}
         <button
           onClick={onOpenAddModal}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold tracking-wide transition-colors cursor-pointer"
+          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white text-sm font-semibold tracking-wide transition-all shadow-md shadow-blue-500/20 cursor-pointer"
         >
-          <Plus className="h-3.5 w-3.5" />
+          <Plus className="h-4 w-4 stroke-[2.5]" />
           <span>New Transaction</span>
         </button>
 
@@ -87,12 +85,10 @@ export default function AppHeader({
         <div className="relative">
           <button
             onClick={() => setIsMenuOpen((prev) => !prev)}
-            className="flex items-center gap-2 p-1.5 pr-2 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 transition-colors cursor-pointer"
+            className="flex items-center gap-2 px-3 py-2 rounded-lg bg-surface-1 hover:bg-surface-hover border border-border-default transition-colors cursor-pointer text-xs font-bold text-text-primary"
           >
-            <div className="h-6 w-6 rounded bg-slate-800 border border-slate-700 flex items-center justify-center text-[10px] font-bold text-slate-300 uppercase">
-              {currentUser?.name ? currentUser.name.slice(0, 2).toUpperCase() : "PL"}
-            </div>
-            <ChevronDown className="h-3 w-3 text-slate-400" />
+            <span>{currentUser?.name ? currentUser.name.slice(0, 2).toUpperCase() : "DE"}</span>
+            <ChevronDown className="h-3.5 w-3.5 text-text-secondary" />
           </button>
 
           <AnimatePresence>
@@ -102,20 +98,20 @@ export default function AppHeader({
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: 4, scale: 0.98 }}
                 transition={{ duration: 0.1 }}
-                className="absolute right-0 mt-2 w-52 rounded-lg bg-slate-900 border border-slate-800 shadow-xl p-1.5 z-50 space-y-1"
+                className="absolute right-0 mt-2 w-52 rounded-xl bg-surface-1 border border-border-default shadow-elevation-lg p-1.5 z-50 space-y-1"
               >
-                <div className="px-2.5 py-1.5 border-b border-slate-800">
-                  <p className="text-xs font-semibold text-white truncate">{currentUser?.name || "Explorer"}</p>
-                  <p className="text-[10px] text-slate-400 truncate">{currentUser?.email || "guest@ledgerflow.app"}</p>
+                <div className="px-2.5 py-1.5 border-b border-border-subtle">
+                  <p className="text-xs font-semibold text-white truncate">{currentUser?.name || "Demo Explorer"}</p>
+                  <p className="text-[10px] text-text-secondary truncate">{currentUser?.email || "guest@ledgerflow.app"}</p>
                   {currentUser?.isGuest && (
-                    <span className="inline-block mt-1 px-1.5 py-0.2 rounded bg-amber-500/10 text-amber-300 border border-amber-500/20 text-[9px] font-medium">
-                      Demo Mode
+                    <span className="inline-block mt-1 px-1.5 py-0.2 rounded bg-blue-950/80 text-blue-400 border border-blue-800/60 text-[9px] font-medium">
+                      Guest Mode
                     </span>
                   )}
                 </div>
                 <button
                   onClick={onLogout}
-                  className="w-full px-2.5 py-1.5 rounded text-left text-xs font-medium text-rose-400 hover:bg-rose-500/10 flex items-center gap-2 transition-colors cursor-pointer"
+                  className="w-full px-2.5 py-1.5 rounded-lg text-left text-xs font-medium text-rose-400 hover:bg-rose-950/30 flex items-center gap-2 transition-colors cursor-pointer"
                 >
                   <LogOut className="h-3.5 w-3.5" />
                   <span>Sign Out</span>

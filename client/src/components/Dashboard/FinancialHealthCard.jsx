@@ -1,7 +1,9 @@
 import { useMemo } from "react"
 import { formatNumber } from "../../utils/formatUtils"
-import { Award, Sparkles } from "lucide-react"
+import { Award, Sparkles, Activity, ShieldCheck } from "lucide-react"
 import AnimatedCounter from "../ui/AnimatedCounter"
+
+import { getGradeFromScore } from "../../utils/healthScoring"
 
 export default function FinancialHealthCard({ 
   totalIncome, 
@@ -13,8 +15,7 @@ export default function FinancialHealthCard({
   // --- Intelligent Scoring Engine ---
   const { 
     totalScore, 
-    grade, 
-    statusBg,
+    healthTier,
     pillars, 
     recommendations 
   } = useMemo(() => {
@@ -58,27 +59,12 @@ export default function FinancialHealthCard({
 
     const finalScore = Math.min(100, Math.max(10, Math.round(savingsScore + budgetScore + stabilityScore + recurringScore)))
 
-    // Grade & Tiering
-    let gradeLabel = "A+"
-    let bg = "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"
-
-    if (finalScore >= 85) {
-      gradeLabel = "A+"
-      bg = "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"
-    } else if (finalScore >= 70) {
-      gradeLabel = "B+"
-      bg = "bg-indigo-500/10 border-indigo-500/20 text-indigo-400"
-    } else if (finalScore >= 50) {
-      gradeLabel = "C"
-      bg = "bg-amber-500/10 border-amber-500/20 text-amber-400"
-    } else {
-      gradeLabel = "D"
-      bg = "bg-rose-500/10 border-rose-500/20 text-rose-400"
-    }
+    // Grade & Tiering aligned with user rules: >80% Green, 60-80% Yellow, <60% Red
+    const tier = getGradeFromScore(finalScore)
 
     const netSurplus = Math.max(0, totalIncome - totalExpense)
 
-    // Pillars Breakdown matching Category Budgets structure & color palette
+    // 4 Pillars Breakdown with rich palette, gradient progress bars, and dot indicators
     const pillarList = [
       {
         name: "Savings Ratio",
@@ -91,7 +77,10 @@ export default function FinancialHealthCard({
         percent: Math.min(100, Math.max(0, savingsRate || (savingsScore / 35) * 100)),
         detail: `${savingsRate.toFixed(0)}% retained`,
         badgeClass: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
-        barColor: "bg-emerald-500",
+        dotBg: "bg-emerald-400",
+        barGradient: "bg-gradient-to-r from-emerald-600 via-teal-500 to-emerald-400 shadow-[0_0_10px_rgba(16,185,129,0.35)]",
+        percentBadgeClass: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30",
+        statusDot: "bg-emerald-400",
         statusLabel: savingsScore >= 28 ? "Optimal" : "Pacing",
         statusTextClass: savingsScore >= 28 ? "text-emerald-400" : "text-amber-400"
       },
@@ -106,7 +95,10 @@ export default function FinancialHealthCard({
         percent: Math.min(100, Math.max(0, budgetUsage)),
         detail: `${Math.max(0, Math.round(100 - budgetUsage))}% headroom`,
         badgeClass: "bg-sky-500/10 text-sky-400 border-sky-500/20",
-        barColor: budgetScore >= 25 ? "bg-sky-500" : budgetScore >= 18 ? "bg-amber-500" : "bg-rose-500",
+        dotBg: "bg-sky-400",
+        barGradient: "bg-gradient-to-r from-sky-600 via-blue-500 to-cyan-400 shadow-[0_0_10px_rgba(56,189,248,0.35)]",
+        percentBadgeClass: budgetScore >= 25 ? "bg-sky-500/15 text-sky-400 border-sky-500/30" : "bg-amber-500/15 text-amber-400 border-amber-500/30",
+        statusDot: budgetScore >= 25 ? "bg-sky-400" : "bg-amber-400",
         statusLabel: budgetScore >= 25 ? "Safe Limit" : budgetScore >= 18 ? "Moderate" : "Tight",
         statusTextClass: budgetScore >= 25 ? "text-sky-400" : budgetScore >= 18 ? "text-amber-400" : "text-rose-400"
       },
@@ -121,7 +113,10 @@ export default function FinancialHealthCard({
         percent: Math.min(100, Math.max(10, (stabilityScore / 20) * 100)),
         detail: hasSurplus ? "Cashflow Positive" : "Deficit Warning",
         badgeClass: "bg-indigo-500/10 text-indigo-400 border-indigo-500/20",
-        barColor: "bg-indigo-500",
+        dotBg: "bg-indigo-400",
+        barGradient: "bg-gradient-to-r from-indigo-600 via-blue-500 to-cyan-400 shadow-[0_0_10px_rgba(99,102,241,0.35)]",
+        percentBadgeClass: hasSurplus ? "bg-indigo-500/15 text-indigo-400 border-indigo-500/30" : "bg-rose-500/15 text-rose-400 border-rose-500/30",
+        statusDot: hasSurplus ? "bg-emerald-400" : "bg-rose-400",
         statusLabel: hasSurplus ? "Stable" : "Deficit",
         statusTextClass: hasSurplus ? "text-emerald-400" : "text-rose-400"
       },
@@ -131,14 +126,17 @@ export default function FinancialHealthCard({
         targetValue: `of ${currencySymbol}${formatNumber(totalExpense, currencySymbol, 0, 0)}`,
         percent: Math.min(100, Math.max(0, recurringRatio)),
         detail: `${recurringRatio.toFixed(0)}% recurring`,
-        badgeClass: recurringScore >= 11 ? "bg-purple-500/10 text-purple-400 border-purple-500/20" : "bg-amber-500/10 text-amber-400 border-amber-500/20",
-        barColor: recurringScore >= 11 ? "bg-purple-500" : "bg-amber-500",
+        badgeClass: "bg-amber-500/10 text-amber-400 border-amber-500/20",
+        dotBg: "bg-amber-400",
+        barGradient: "bg-gradient-to-r from-amber-600 via-orange-500 to-amber-400 shadow-[0_0_10px_rgba(245,158,11,0.35)]",
+        percentBadgeClass: recurringScore >= 11 ? "bg-surface-2 text-text-primary border-border-default/60" : "bg-amber-500/15 text-amber-400 border-amber-500/30",
+        statusDot: recurringScore >= 11 ? "bg-blue-400" : "bg-amber-400",
         statusLabel: recurringScore >= 11 ? "Low Burden" : "High Burn",
-        statusTextClass: recurringScore >= 11 ? "text-purple-400" : "text-amber-400"
+        statusTextClass: recurringScore >= 11 ? "text-blue-400" : "text-amber-400"
       }
     ]
 
-    // Actionable Recommendations matching Savings Goals style
+    // Actionable Recommendations matching luxury card style
     const recs = []
     if (recurringRatio > 35) {
       recs.push({
@@ -146,7 +144,6 @@ export default function FinancialHealthCard({
         category: "Recurring Liabilities",
         desc: "Fixed recurring charges take up more than 35% of outflows. Audit unused subscriptions in Bill Radar.",
         potentialSaving: `${currencySymbol}30-80/mo`,
-        badgeClass: "bg-amber-500/10 text-amber-400 border-amber-500/20",
         emoji: "📡",
         impact: "Lower Burn"
       })
@@ -157,7 +154,6 @@ export default function FinancialHealthCard({
         category: "Budget Threshold",
         desc: "You have utilized over 85% of your planned monthly budget limit. Consider limiting dining and shopping.",
         potentialSaving: `${currencySymbol}100-200`,
-        badgeClass: "bg-rose-500/10 text-rose-400 border-rose-500/20",
         emoji: "⚠️",
         impact: "Budget Safety"
       })
@@ -168,7 +164,6 @@ export default function FinancialHealthCard({
         category: "Wealth Accelerator",
         desc: "Your savings rate exceeds the benchmark 20%. Allocate recurring surplus into dedicated savings targets.",
         potentialSaving: "Wealth Compounder",
-        badgeClass: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
         emoji: "💎",
         impact: "Growth"
       })
@@ -178,7 +173,6 @@ export default function FinancialHealthCard({
         category: "Capital Reserve",
         desc: "Aiming for a 20% savings target creates a comfortable living buffer against unexpected outlays.",
         potentialSaving: `${currencySymbol}150+/mo`,
-        badgeClass: "bg-indigo-500/10 text-indigo-400 border-indigo-500/20",
         emoji: "🛡️",
         impact: "Security"
       })
@@ -186,80 +180,170 @@ export default function FinancialHealthCard({
 
     return {
       totalScore: finalScore,
-      grade: gradeLabel,
-      statusBg: bg,
+      healthTier: tier,
       pillars: pillarList,
       recommendations: recs.slice(0, 3)
     }
   }, [totalIncome, totalExpense, budgetLimit, expenses, currencySymbol])
 
   return (
-    <div className="finance-card p-5 sm:p-6 lg:p-7 space-y-6 md:space-y-8">
-      {/* Section Header (matching Category Budgets & Savings Goals header standard) */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-800">
+    <div className="bg-surface-1 border border-border-default rounded-xl p-5 sm:p-6 lg:p-7 shadow-elevation-sm space-y-6 md:space-y-8">
+      {/* 1. Section Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-border-subtle">
         <div>
           <h2 className="text-[19px] font-bold text-white tracking-tight flex items-center gap-2">
-            <Award className="h-4 w-4 text-emerald-400" />
+            <Award className="h-5 w-5 text-emerald-400" />
             <span>4-Pillar Financial Health Audit</span>
           </h2>
-          <p className="text-[13px] text-slate-400 font-medium mt-1">
+          <p className="text-xs text-text-secondary font-normal mt-0.5">
             Algorithmic scoring across savings rate, budget adherence, cashflow buffer, and recurring burden
           </p>
         </div>
+      </div>
 
-        {/* Health Score Summary Badge */}
-        <div className="flex items-center gap-2 self-start sm:self-auto">
-          <div className="flex items-center gap-2 px-2.5 py-1 rounded bg-slate-900/80 border border-slate-800 text-xs">
-            <span className="text-slate-400 font-medium">Health Score:</span>
-            <span className="text-white font-bold font-mono-nums">
-              <AnimatedCounter value={totalScore} decimals={0} />
+      {/* 2. Hero Financial Health Score Showcase with Master Health Bar */}
+      <div className="rounded-xl bg-gradient-to-b from-surface-2 to-surface-inset border border-border-subtle p-5 sm:p-6 lg:p-7 shadow-elevation-md space-y-5">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+          {/* Left Side: Score number + Grade + Verdict */}
+          <div className="space-y-3">
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] font-bold uppercase tracking-[0.08em] text-text-secondary flex items-center gap-1.5">
+                <Activity className="h-3.5 w-3.5 text-blue-400" />
+                <span>Financial Health Score</span>
+              </span>
+            </div>
+
+            <div className="flex items-baseline gap-3">
+              <span className="text-4xl sm:text-5xl lg:text-6xl font-black font-mono tracking-tight text-white leading-none">
+                <AnimatedCounter value={totalScore} decimals={0} />
+              </span>
+              <span className="text-base sm:text-lg font-mono text-text-muted font-semibold">
+                / 100
+              </span>
+              <span className={`px-2.5 py-1 rounded-lg text-xs sm:text-sm font-bold font-mono tracking-wide ${healthTier.badgeClass}`}>
+                Grade {healthTier.grade}
+              </span>
+            </div>
+
+            <div className="space-y-0.5">
+              <h3 className="text-sm sm:text-base font-bold text-white tracking-tight flex items-center gap-2">
+                <span className={`w-2 h-2 rounded-full ${healthTier.dotColor} animate-pulse shadow-[0_0_8px_currentColor]`} />
+                <span>{healthTier.title}</span>
+              </h3>
+              <p className="text-xs sm:text-sm text-text-secondary max-w-xl leading-relaxed">
+                {healthTier.desc}
+              </p>
+            </div>
+          </div>
+
+          {/* Right Side: Quick Stats / Bracket Summary */}
+          <div className="grid grid-cols-2 gap-3 min-w-[280px] lg:min-w-[320px] bg-background/70 p-4 rounded-xl border border-border-subtle">
+            <div className="space-y-1">
+              <span className="text-[10px] font-semibold text-text-secondary uppercase tracking-wider">Health Bracket</span>
+              <p className="text-sm font-bold font-mono text-emerald-400 flex items-center gap-1">
+                <ShieldCheck className="h-4 w-4" />
+                <span>{healthTier.statusText}</span>
+              </p>
+              <p className="text-[11px] text-text-muted">Real-time audit</p>
+            </div>
+            <div className="space-y-1">
+              <span className="text-[10px] font-semibold text-text-secondary uppercase tracking-wider">Scoring Pillars</span>
+              <p className="text-sm font-bold font-mono text-white">4 Dimensions</p>
+              <p className="text-[11px] text-text-muted">Savings, Budget, Flow, Debt</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Master Health Bar with Tier Zones */}
+        <div className="space-y-2.5 pt-4 border-t border-border-subtle">
+          <div className="flex items-center justify-between text-xs font-mono">
+            <span className="text-text-primary font-semibold flex items-center gap-2">
+              <span className={`w-2 h-2 rounded-full ${healthTier.dotColor}`} />
+              <span>Health Meter & Progress</span>
             </span>
-            <span className="text-slate-500 font-mono-nums text-[11px]">/ 100</span>
-            <span className={`px-1.5 py-0.2 rounded text-[10px] font-semibold border ${statusBg}`}>
-              Grade {grade}
+            <span className="font-bold text-white">
+              {totalScore}% Capacity
             </span>
+          </div>
+
+          {/* Progress Track */}
+          <div className="relative h-3 w-full bg-slate-950 border border-border-subtle rounded-full overflow-hidden p-[1px] shadow-inner">
+            {/* Ticks at 60% and 80% */}
+            <div className="absolute inset-0 pointer-events-none z-10 flex">
+              <div className="w-[60%] h-full border-r border-border-default/60" />
+              <div className="w-[20%] h-full border-r border-border-default/60" />
+            </div>
+
+            <div
+              style={{ width: `${totalScore}%` }}
+              className={`h-full rounded-full transition-all duration-700 ${healthTier.barGradient}`}
+            />
+          </div>
+
+          {/* Tier Range Markers matching exact user rules */}
+          <div className="grid grid-cols-3 text-[10px] sm:text-[11px] font-mono text-text-muted">
+            <div className="text-left">
+              <span className={totalScore < 60 ? "text-rose-400 font-bold" : "text-text-muted"}>
+                &lt;60% Red (Critical)
+              </span>
+            </div>
+            <div className="text-center">
+              <span className={totalScore >= 60 && totalScore <= 80 ? "text-amber-400 font-bold" : "text-text-muted"}>
+                60%–80% Yellow (Fair)
+              </span>
+            </div>
+            <div className="text-right">
+              <span className={totalScore > 80 ? "text-emerald-400 font-bold" : "text-text-muted"}>
+                &gt;80% Green (Optimal)
+              </span>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* 2. Full-Width Recommendation Insight Bar */}
+      {/* 3. Recommendation Section */}
       {recommendations.length > 0 && (
-        <div className="rounded-xl bg-slate-900/40 border border-slate-800/60 p-4 sm:p-5 lg:p-6 space-y-5">
-          <div className="flex items-center justify-between pb-3 border-b border-slate-800/50">
+        <div className="rounded-xl bg-gradient-to-b from-surface-2 to-surface-inset border border-border-subtle p-4 sm:p-5 lg:p-6 space-y-4 shadow-elevation-sm">
+          <div className="flex items-center justify-between pb-3 border-b border-border-subtle">
             <div className="flex items-center gap-2">
-              <Sparkles className="h-4 w-4 text-indigo-400" />
-              <span className="text-xs font-semibold text-slate-200 uppercase tracking-wider">
+              <Sparkles className="h-4 w-4 text-blue-400" />
+              <span className="text-xs font-bold text-white uppercase tracking-wider">
                 Recommendation
               </span>
             </div>
-            <span className="text-[11px] text-slate-500">
+            <span className="text-[11px] font-mono text-text-secondary">
               {recommendations.length} insight{recommendations.length !== 1 ? 's' : ''}
             </span>
           </div>
 
-          <div className="space-y-5">
+          <div className="space-y-4">
             {recommendations.map((rec, idx) => (
-              <div key={idx} className="flex flex-col gap-3">
+              <div key={idx} className="space-y-3">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                   <div className="flex items-center gap-3">
-                    <span className="text-xl shrink-0">{rec.emoji}</span>
-                    <h3 className="text-base font-semibold text-white">{rec.title}</h3>
+                    <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-xl shrink-0">
+                      {rec.emoji}
+                    </div>
+                    <h3 className="text-sm sm:text-base font-bold text-white tracking-tight">
+                      {rec.title}
+                    </h3>
                   </div>
-                  <span className="inline-block self-start sm:self-auto text-[11px] font-medium text-slate-500 bg-slate-800/50 px-2 py-0.5 rounded">
+                  <span className="self-start sm:self-auto text-[11px] font-semibold font-mono px-2.5 py-0.5 rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/25">
                     {rec.category}
                   </span>
                 </div>
-                
-                <p className="text-sm text-slate-400 leading-relaxed max-w-3xl sm:pl-9">
+
+                <p className="text-xs sm:text-sm text-text-primary leading-relaxed sm:pl-[52px]">
                   {rec.desc}
                 </p>
 
-                <div className="flex items-center justify-between text-[11px] pt-3 mt-1.5 border-t border-slate-800/40 sm:ml-9">
-                  <span className="text-slate-500">
-                    Impact: <span className="font-medium text-slate-300">{rec.impact}</span>
+                <div className="flex items-center justify-between text-xs pt-3 border-t border-border-default/70 sm:ml-[52px] font-mono">
+                  <span className="text-text-secondary">
+                    Impact: <span className="font-semibold text-text-primary">{rec.impact}</span>
                   </span>
-                  <span className="text-emerald-400 font-medium">
-                    Active Advice
+                  <span className="text-emerald-400 font-semibold flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block animate-pulse" />
+                    <span>Active Advice</span>
                   </span>
                 </div>
               </div>
@@ -268,51 +352,55 @@ export default function FinancialHealthCard({
         </div>
       )}
 
-      {/* 3. 4 Health Pillars Grid (Secondary Supporting Metrics) */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+      {/* 4. 4 Health Pillars Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3.5">
         {pillars.map((pillar) => (
           <div
             key={pillar.name}
-            className="p-4 sm:p-5 rounded-lg bg-slate-900/40 border border-slate-800/40 space-y-4"
+            className="p-4 sm:p-5 rounded-xl bg-gradient-to-b from-surface-2 to-surface-inset border border-border-subtle hover:border-border-strong transition-all duration-200 space-y-3.5 group hover:shadow-xl hover:shadow-black/40 hover:-translate-y-0.5"
           >
-            {/* Row 1: Pillar name on left + Percentage on right */}
+            {/* Header: Pillar Badge with colored dot + Percentage */}
             <div className="flex items-center justify-between">
-              <span className="text-[12px] font-semibold text-slate-300">
-                {pillar.name}
+              <span className={`inline-flex items-center gap-1.5 text-[11px] font-semibold px-2 py-0.5 rounded border ${pillar.badgeClass}`}>
+                <span className={`w-1.5 h-1.5 rounded-full ${pillar.dotBg}`} />
+                <span>{pillar.name}</span>
               </span>
-              <span className="text-[11px] font-mono-nums text-slate-500">
+              <span className={`text-[11px] font-mono font-bold px-2 py-0.5 rounded border ${pillar.percentBadgeClass}`}>
                 {pillar.percent.toFixed(0)}%
               </span>
             </div>
 
-            {/* Row 2: Primary value + secondary context */}
+            {/* Amount & Target Row */}
             <div className="space-y-2">
-              <div className="flex justify-between items-baseline">
-                <span className="text-[17px] font-semibold text-white font-mono-nums leading-tight">
+              <div className="flex justify-between items-baseline pt-0.5">
+                <span className="text-[20px] sm:text-[21px] font-bold text-white font-mono tracking-tight leading-none">
                   {pillar.scoreValue}
                 </span>
-                <span className="text-[11px] text-slate-500">
+                <span className="font-semibold text-text-primary text-xs font-mono px-1.5 py-0.5 rounded bg-surface-2/60 border border-border-strong/50">
                   {pillar.targetValue}
                 </span>
               </div>
 
-              {/* Row 3: Progress Bar */}
-              <div className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
+              {/* High fidelity progress bar */}
+              <div className="h-2 w-full bg-slate-950/80 border border-border-subtle rounded-full overflow-hidden p-[1px]">
                 <div
-                  className={`h-full rounded-full transition-all duration-300 ${pillar.barColor}`}
+                  className={`h-full rounded-full transition-all duration-500 ${pillar.barGradient}`}
                   style={{ width: `${pillar.percent}%` }}
                 />
               </div>
             </div>
 
-            {/* Row 4: Detail + Status */}
-            <div className="flex items-center justify-between pt-3 mt-1 border-t border-slate-800/40 text-[11px]">
-              <span className="text-slate-500">
+            {/* Bottom Row: Detail + Status */}
+            <div className="flex items-center justify-between pt-3 border-t border-border-default/70 text-xs font-mono">
+              <span className="text-text-secondary">
                 {pillar.detail}
               </span>
-              <span className={`font-medium ${pillar.statusTextClass}`}>
-                {pillar.statusLabel}
-              </span>
+              <div className="flex items-center gap-1.5">
+                <span className={`w-1.5 h-1.5 rounded-full ${pillar.statusDot}`} />
+                <span className={`font-semibold ${pillar.statusTextClass}`}>
+                  {pillar.statusLabel}
+                </span>
+              </div>
             </div>
           </div>
         ))}

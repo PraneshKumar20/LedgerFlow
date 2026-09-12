@@ -3,16 +3,16 @@ import { formatNumber } from "../../utils/formatUtils"
 import { motion, AnimatePresence } from "framer-motion"
 import confetti from "canvas-confetti"
 import { 
-  Target, Plus, Trash2, CheckCircle2, 
-  Trophy, Calendar, DollarSign, X, TrendingUp,
-  ArrowUpRight, AlertCircle, PartyPopper
+  Target, Plus, Trash2, 
+  Trophy, Calendar, DollarSign, X, 
+  PartyPopper
 } from "lucide-react"
 import AnimatedCounter from "../ui/AnimatedCounter"
 
 const EMOJI_OPTIONS = ["🛡️", "✈️", "💻", "🚗", "🏠", "🎓", "💎", "🎁", "🌴", "⚡"]
 const COLOR_THEMES = [
   { name: "Emerald", bar: "bg-emerald-500", border: "border-emerald-500/20", text: "text-emerald-400", bg: "bg-emerald-500/10" },
-  { name: "Indigo", bar: "bg-indigo-600", border: "border-indigo-500/20", text: "text-indigo-400", bg: "bg-indigo-500/10" },
+  { name: "Sapphire", bar: "bg-brand", border: "border-brand/20", text: "text-brand", bg: "bg-brand/10" },
   { name: "Amber", bar: "bg-amber-500", border: "border-amber-500/20", text: "text-amber-400", bg: "bg-amber-500/10" },
   { name: "Sky", bar: "bg-sky-500", border: "border-sky-500/20", text: "text-sky-400", bg: "bg-sky-500/10" },
   { name: "Rose", bar: "bg-rose-500", border: "border-rose-500/20", text: "text-rose-400", bg: "bg-rose-500/10" }
@@ -36,7 +36,7 @@ export default function SavingsGoalsModal({
   const [newCurrent, setNewCurrent] = useState("")
   const [newDate, setNewDate] = useState("")
   const [newEmoji, setNewEmoji] = useState("🎯")
-  const [newColor, setNewColor] = useState(0)
+  const [newColor] = useState(0)
 
   // Overall statistics
   const stats = useMemo(() => {
@@ -59,15 +59,13 @@ export default function SavingsGoalsModal({
         particleCount: 4,
         angle: 60,
         spread: 55,
-        origin: { x: 0, y: 0.7 },
-        colors: ['#6366f1', '#10b981', '#f59e0b', '#ec4899', '#0ea5e9']
+        origin: { x: 0, y: 0.7 }
       })
       confetti({
         particleCount: 4,
         angle: 120,
         spread: 55,
-        origin: { x: 1, y: 0.7 },
-        colors: ['#6366f1', '#10b981', '#f59e0b', '#ec4899', '#0ea5e9']
+        origin: { x: 1, y: 0.7 }
       })
 
       if (Date.now() < end) {
@@ -77,57 +75,66 @@ export default function SavingsGoalsModal({
     frame()
   }
 
+  // Create new Goal
   const handleCreateGoal = (e) => {
     e.preventDefault()
-    if (!newTitle.trim() || !newTarget) return
+    if (!newTitle.trim() || !newTarget || Number(newTarget) <= 0) return
 
-    const goal = {
-      id: `goal-${Date.now()}`,
+    const baseTarget = Number(newTarget) / multiplier
+    const baseCurrent = (Number(newCurrent) || 0) / multiplier
+
+    const newGoal = {
+      id: `goal_${Date.now()}`,
       title: newTitle.trim(),
-      targetAmount: Number(newTarget) / multiplier,
-      currentAmount: (Number(newCurrent) || 0) / multiplier,
+      targetAmount: baseTarget,
+      currentAmount: baseCurrent,
       targetDate: newDate || null,
       emoji: newEmoji,
       colorIndex: newColor,
       createdAt: new Date().toISOString()
     }
 
-    const updated = [...savingsGoals, goal]
-    onUpdateGoals(updated)
+    onUpdateGoals([...savingsGoals, newGoal])
 
-    // Reset
+    // Reset Form
     setNewTitle("")
     setNewTarget("")
     setNewCurrent("")
     setNewDate("")
     setIsCreating(false)
 
-    if (goal.currentAmount >= goal.targetAmount) {
+    // Check if created already completed
+    if (baseCurrent >= baseTarget) {
       triggerCelebration()
     }
   }
 
-  const handleDeleteGoal = (id) => {
-    const updated = savingsGoals.filter(g => g.id !== id)
-    onUpdateGoals(updated)
+  // Delete Goal
+  const handleDeleteGoal = (goalId) => {
+    onUpdateGoals(savingsGoals.filter(g => g.id !== goalId))
   }
 
+  // Quick Deposit inside modal
   const handleQuickDeposit = (amount) => {
-    if (!depositModalGoal) return
-    const numAmount = Number(amount)
-    if (isNaN(numAmount) || numAmount <= 0) return
+    if (!depositModalGoal || !amount || Number(amount) <= 0) return
+
+    const num = Number(amount) / multiplier
+    let hitTarget = false
 
     const updated = savingsGoals.map(g => {
       if (g.id === depositModalGoal.id) {
-        const baseAmount = numAmount / multiplier
-        const newTotal = (Number(g.currentAmount) || 0) + baseAmount
-        if (newTotal >= g.targetAmount && (Number(g.currentAmount) || 0) < g.targetAmount) {
-          triggerCelebration()
+        const next = (Number(g.currentAmount) || 0) + num
+        if (next >= (Number(g.targetAmount) || 1) && (Number(g.currentAmount) || 0) < (Number(g.targetAmount) || 1)) {
+          hitTarget = true
         }
-        return { ...g, currentAmount: newTotal }
+        return { ...g, currentAmount: next }
       }
       return g
     })
+
+    if (hitTarget) {
+      triggerCelebration()
+    }
 
     onUpdateGoals(updated)
     setDepositAmount("")
@@ -144,7 +151,7 @@ export default function SavingsGoalsModal({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-slate-950/80 backdrop-blur-md"
+            className="fixed inset-0 bg-surface-overlay backdrop-blur-sm"
           />
 
           {/* Modal Container */}
@@ -153,20 +160,20 @@ export default function SavingsGoalsModal({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.98, y: 10 }}
             transition={{ duration: 0.15 }}
-            className="relative w-full max-w-2xl bg-[#0f1523] border border-slate-800 rounded-lg shadow-2xl overflow-hidden z-10 p-6 space-y-5 max-h-[90vh] flex flex-col"
+            className="relative w-full max-w-2xl bg-surface-2 border border-border-default rounded-modal shadow-elevation-modal overflow-hidden z-10 p-6 space-y-5 max-h-[90vh] flex flex-col"
           >
             {/* Header */}
             <div className="flex items-start justify-between">
               <div className="space-y-1">
                 <div className="flex items-center gap-2.5">
-                  <div className="p-2 rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                  <div className="p-2 rounded-control bg-positive/10 text-positive border border-positive/20 shadow-elevation-sm">
                     <Target className="h-4 w-4" />
                   </div>
-                  <h2 className="text-lg font-bold text-white tracking-tight">
+                  <h2 className="text-lg font-bold text-text-primary tracking-tight">
                     Savings Goals & Milestones
                   </h2>
                 </div>
-                <p className="text-xs text-slate-400 font-normal pl-9">
+                <p className="text-xs text-text-secondary font-normal pl-9">
                   Track target funds, allocate savings, and unlock milestone celebrations.
                 </p>
               </div>
@@ -174,14 +181,14 @@ export default function SavingsGoalsModal({
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setIsCreating(!isCreating)}
-                  className="px-3 py-1.5 rounded-md bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-xs flex items-center gap-1.5 transition-colors"
+                  className="px-3 py-1.5 rounded-control bg-brand hover:bg-brand-hover active:bg-brand-active text-white font-medium text-xs flex items-center gap-1.5 transition-colors shadow-elevation-sm cursor-pointer"
                 >
                   <Plus className="h-3.5 w-3.5" />
                   <span>{isCreating ? "Cancel" : "New Goal"}</span>
                 </button>
                 <button
                   onClick={onClose}
-                  className="p-1.5 rounded-md bg-slate-800/80 hover:bg-slate-700/80 text-slate-400 hover:text-white transition-colors"
+                  className="p-1.5 rounded-control bg-surface-3 hover:bg-surface-hover text-text-secondary hover:text-text-primary transition-colors cursor-pointer"
                 >
                   <X className="h-4 w-4" />
                 </button>
@@ -190,39 +197,39 @@ export default function SavingsGoalsModal({
 
             {/* Summary Highlights */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div className="p-3.5 rounded-lg bg-[#0b101b] border border-slate-800 space-y-1">
-                <p className="text-[11px] uppercase font-semibold tracking-[0.06em] text-slate-500 flex items-center gap-1.5">
-                  <DollarSign className="h-3.5 w-3.5 text-emerald-400" />
+              <div className="p-3.5 rounded-card bg-surface-1 border border-border-default space-y-1">
+                <p className="text-[11px] uppercase font-semibold tracking-[0.06em] text-text-muted flex items-center gap-1.5">
+                  <DollarSign className="h-3.5 w-3.5 text-positive" />
                   Total Saved
                 </p>
-                <div className="text-xl font-semibold text-emerald-400 font-mono-nums">
+                <div className="text-xl font-semibold text-positive font-mono-nums">
                   <AnimatedCounter value={stats.totalSaved * multiplier} prefix={currencySymbol} />
                 </div>
-                <p className="text-xs text-slate-400 font-normal">Across {savingsGoals.length} targets</p>
+                <p className="text-xs text-text-secondary font-normal">Across {savingsGoals.length} targets</p>
               </div>
 
-              <div className="p-3.5 rounded-lg bg-[#0b101b] border border-slate-800 space-y-1">
-                <p className="text-[11px] uppercase font-semibold tracking-[0.06em] text-slate-500 flex items-center gap-1.5">
-                  <Target className="h-3.5 w-3.5 text-indigo-400" />
+              <div className="p-3.5 rounded-card bg-surface-1 border border-border-default space-y-1">
+                <p className="text-[11px] uppercase font-semibold tracking-[0.06em] text-text-muted flex items-center gap-1.5">
+                  <Target className="h-3.5 w-3.5 text-brand" />
                   Target Goal
                 </p>
-                <div className="text-xl font-semibold text-white font-mono-nums">
+                <div className="text-xl font-semibold text-text-primary font-mono-nums">
                   <AnimatedCounter value={stats.totalTarget * multiplier} prefix={currencySymbol} />
                 </div>
-                <p className="text-xs text-slate-400 font-normal font-mono-nums">
+                <p className="text-xs text-text-secondary font-normal font-mono-nums">
                   {currencySymbol}{formatNumber(Math.round(stats.totalRemaining * multiplier), currencySymbol, 0, 0)} to go
                 </p>
               </div>
 
-              <div className="p-3.5 rounded-lg bg-[#0b101b] border border-slate-800 space-y-1">
-                <p className="text-[11px] uppercase font-semibold tracking-[0.06em] text-slate-500 flex items-center gap-1.5">
-                  <Trophy className="h-3.5 w-3.5 text-amber-400" />
+              <div className="p-3.5 rounded-card bg-surface-1 border border-border-default space-y-1">
+                <p className="text-[11px] uppercase font-semibold tracking-[0.06em] text-text-muted flex items-center gap-1.5">
+                  <Trophy className="h-3.5 w-3.5 text-warning" />
                   Milestone Progress
                 </p>
-                <div className="text-xl font-semibold text-amber-400 font-mono-nums">
+                <div className="text-xl font-semibold text-warning font-mono-nums">
                   {stats.overallProgress}%
                 </div>
-                <p className="text-xs text-slate-400 font-normal">{stats.completedCount} reached 100%</p>
+                <p className="text-xs text-text-secondary font-normal">{stats.completedCount} reached 100%</p>
               </div>
             </div>
 
@@ -234,57 +241,57 @@ export default function SavingsGoalsModal({
                   animate={{ opacity: 1, height: "auto" }}
                   exit={{ opacity: 0, height: 0 }}
                   onSubmit={handleCreateGoal}
-                  className="p-4 rounded-lg bg-[#0b101b] border border-slate-800 space-y-3 overflow-hidden"
+                  className="p-4 rounded-card bg-surface-1 border border-border-default space-y-3 overflow-hidden"
                 >
-                  <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
-                    <Target className="h-3.5 w-3.5 text-emerald-400" /> Define New Financial Milestone
+                  <h3 className="text-xs font-semibold uppercase tracking-wider text-text-primary flex items-center gap-1.5">
+                    <Target className="h-3.5 w-3.5 text-positive" /> Define New Financial Milestone
                   </h3>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                      <label className="text-[11px] text-slate-400 font-medium">Goal Name</label>
+                      <label className="text-[11px] text-text-secondary font-medium">Goal Name</label>
                       <input
                         type="text"
                         placeholder="e.g. Emergency Fund, Japan Trip"
                         value={newTitle}
                         onChange={e => setNewTitle(e.target.value)}
-                        className="w-full mt-1 px-3 py-1.5 rounded-md bg-slate-900 border border-slate-700 text-white text-xs outline-none focus:border-blue-500"
+                        className="w-full mt-1 px-3 py-1.5 rounded-control bg-surface-3 border border-border-default text-text-primary text-xs outline-none focus-ring"
                         required
                       />
                     </div>
 
                     <div>
-                      <label className="text-[11px] text-slate-400 font-medium">Target Amount ({currencySymbol})</label>
+                      <label className="text-[11px] text-text-secondary font-medium">Target Amount ({currencySymbol})</label>
                       <input
                         type="number"
                         placeholder="5000"
                         value={newTarget}
                         onChange={e => setNewTarget(e.target.value)}
-                        className="w-full mt-1 px-3 py-1.5 rounded-md bg-slate-900 border border-slate-700 text-white text-xs outline-none focus:border-blue-500"
+                        className="w-full mt-1 px-3 py-1.5 rounded-control bg-surface-3 border border-border-default text-text-primary text-xs outline-none focus-ring"
                         required
                         min="1"
                       />
                     </div>
 
                     <div>
-                      <label className="text-[11px] text-slate-400 font-medium">Initial Amount Saved ({currencySymbol})</label>
+                      <label className="text-[11px] text-text-secondary font-medium">Initial Amount Saved ({currencySymbol})</label>
                       <input
                         type="number"
                         placeholder="0"
                         value={newCurrent}
                         onChange={e => setNewCurrent(e.target.value)}
-                        className="w-full mt-1 px-3 py-1.5 rounded-md bg-slate-900 border border-slate-700 text-white text-xs outline-none focus:border-blue-500"
+                        className="w-full mt-1 px-3 py-1.5 rounded-control bg-surface-3 border border-border-default text-text-primary text-xs outline-none focus-ring"
                         min="0"
                       />
                     </div>
 
                     <div>
-                      <label className="text-[11px] text-slate-400 font-medium">Target Completion Date (Optional)</label>
+                      <label className="text-[11px] text-text-secondary font-medium">Target Completion Date (Optional)</label>
                       <input
                         type="date"
                         value={newDate}
                         onChange={e => setNewDate(e.target.value)}
-                        className="w-full mt-1 px-3 py-1.5 rounded-md bg-slate-900 border border-slate-700 text-white text-xs outline-none focus:border-blue-500"
+                        className="w-full mt-1 px-3 py-1.5 rounded-control bg-surface-3 border border-border-default text-text-primary text-xs outline-none focus-ring"
                       />
                     </div>
                   </div>
@@ -292,13 +299,13 @@ export default function SavingsGoalsModal({
                   <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
                     {/* Emoji picker */}
                     <div className="flex items-center gap-1">
-                      <span className="text-[11px] text-slate-400 mr-1">Icon:</span>
+                      <span className="text-[11px] text-text-secondary mr-1">Icon:</span>
                       {EMOJI_OPTIONS.map(emoji => (
                         <button
                           key={emoji}
                           type="button"
                           onClick={() => setNewEmoji(emoji)}
-                          className={`p-1 text-sm rounded transition-all ${newEmoji === emoji ? 'bg-blue-600/20 border border-blue-500 text-white' : 'hover:bg-slate-800 opacity-70'}`}
+                          className={`p-1 text-sm rounded-control transition-all ${newEmoji === emoji ? 'bg-brand/20 border border-brand text-text-primary' : 'hover:bg-surface-hover opacity-70'}`}
                         >
                           {emoji}
                         </button>
@@ -307,7 +314,7 @@ export default function SavingsGoalsModal({
 
                     <button
                       type="submit"
-                      className="px-4 py-1.5 rounded-md bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-xs transition-colors"
+                      className="px-4 py-1.5 rounded-control bg-brand hover:bg-brand-hover active:bg-brand-active text-white font-medium text-xs transition-colors shadow-elevation-sm cursor-pointer"
                     >
                       Save Target Goal
                     </button>
@@ -320,11 +327,11 @@ export default function SavingsGoalsModal({
             <div className="overflow-y-auto space-y-3 pr-1 flex-1">
               {savingsGoals.length === 0 ? (
                 <div className="text-center py-12 space-y-3">
-                  <div className="p-3 rounded-lg bg-slate-900 border border-slate-800 inline-block text-slate-500">
+                  <div className="p-3 rounded-control bg-surface-3 border border-border-default inline-block text-text-muted">
                     <Target className="h-6 w-6 mx-auto stroke-1" />
                   </div>
-                  <p className="text-slate-400 text-sm font-medium">No savings goals created yet.</p>
-                  <p className="text-slate-500 text-xs">Click "New Goal" above to create your first milestone.</p>
+                  <p className="text-text-secondary text-sm font-medium">No savings goals created yet.</p>
+                  <p className="text-text-muted text-xs">Click "New Goal" above to create your first milestone.</p>
                 </div>
               ) : (
                 savingsGoals.map(goal => {
@@ -341,27 +348,27 @@ export default function SavingsGoalsModal({
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, scale: 0.95 }}
-                      className={`p-4 rounded-lg bg-[#0b101b] border ${isComplete ? 'border-emerald-500/30 bg-emerald-500/[0.02]' : 'border-slate-800'} hover:border-slate-700 transition-colors space-y-3 group`}
+                      className={`p-4 rounded-card bg-surface-1 border ${isComplete ? 'border-positive/30 bg-positive/[0.02]' : 'border-border-default'} hover:border-border-strong transition-colors space-y-3 group`}
                     >
                       <div className="flex items-start justify-between">
                         <div className="flex items-center gap-2.5">
-                          <span className="text-xl p-2 rounded-md bg-slate-900 border border-slate-800">
+                          <span className="text-xl p-2 rounded-control bg-surface-3 border border-border-default">
                             {goal.emoji || "🎯"}
                           </span>
                           <div>
                             <div className="flex items-center gap-2">
-                              <h4 className="text-sm font-semibold text-white tracking-wide">
+                              <h4 className="text-sm font-semibold text-text-primary tracking-wide">
                                 {goal.title}
                               </h4>
                               {isComplete && (
-                                <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1">
+                                <span className="px-2 py-0.5 rounded-badge text-[10px] font-semibold bg-positive/10 text-positive border border-positive/20 flex items-center gap-1">
                                   <PartyPopper className="h-3 w-3" /> Reached 100%
                                 </span>
                               )}
                             </div>
                             {goal.targetDate && (
-                              <p className="text-[10px] text-slate-400 flex items-center gap-1 mt-0.5">
-                                <Calendar className="h-3 w-3 text-slate-500" />
+                              <p className="text-[10px] text-text-secondary flex items-center gap-1 mt-0.5">
+                                <Calendar className="h-3 w-3 text-text-muted" />
                                 Target Date: {new Date(goal.targetDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
                               </p>
                             )}
@@ -374,14 +381,14 @@ export default function SavingsGoalsModal({
                               setDepositModalGoal(goal)
                               setDepositAmount("100")
                             }}
-                            className="px-2.5 py-1 rounded-md bg-blue-600 hover:bg-blue-500 text-white text-xs font-medium flex items-center gap-1 transition-colors"
+                            className="px-2.5 py-1 rounded-control bg-brand hover:bg-brand-hover active:bg-brand-active text-white text-xs font-medium flex items-center gap-1 transition-colors shadow-elevation-sm cursor-pointer"
                             title="Add money to this goal"
                           >
                             <Plus className="h-3 w-3" /> Deposit
                           </button>
                           <button
                             onClick={() => handleDeleteGoal(goal.id)}
-                            className="p-1.5 rounded-md text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-colors opacity-0 group-hover:opacity-100"
+                            className="p-1.5 rounded-control text-text-muted hover:text-negative hover:bg-negative/10 transition-colors opacity-0 group-hover:opacity-100 cursor-pointer"
                             title="Delete goal"
                           >
                             <Trash2 className="h-3.5 w-3.5" />
@@ -392,30 +399,30 @@ export default function SavingsGoalsModal({
                       {/* Progress bar with milestones */}
                       <div className="space-y-1.5">
                         <div className="flex justify-between text-xs font-mono-nums">
-                          <span className="text-white font-semibold">
+                          <span className="text-text-primary font-semibold">
                             {currencySymbol}{formatNumber(Math.round(current * multiplier), currencySymbol, 0, 0)}
                           </span>
-                          <span className="text-slate-400">
+                          <span className="text-text-secondary">
                             {progress}% of {currencySymbol}{formatNumber(Math.round(target * multiplier), currencySymbol, 0, 0)}
                           </span>
                         </div>
 
-                        <div className="relative h-2 w-full bg-slate-800 rounded-full overflow-hidden">
+                        <div className="relative h-2 w-full bg-surface-inset rounded-full overflow-hidden">
                           <motion.div
                             initial={{ width: 0 }}
                             animate={{ width: `${progress}%` }}
                             transition={{ duration: 0.8, ease: "easeOut" }}
-                            className={`h-full rounded-full ${isComplete ? 'bg-emerald-500' : theme.bar}`}
+                            className={`h-full rounded-full ${isComplete ? 'bg-positive' : theme.bar}`}
                           />
                         </div>
 
                         {/* Milestone indicators */}
-                        <div className="flex justify-between text-[10px] text-slate-500 font-mono-nums px-0.5">
+                        <div className="flex justify-between text-[10px] text-text-muted font-mono-nums px-0.5">
                           <span>0%</span>
                           <span>25%</span>
                           <span>50%</span>
                           <span>75%</span>
-                          <span className={isComplete ? "text-emerald-400 font-semibold" : ""}>100%</span>
+                          <span className={isComplete ? "text-positive font-semibold" : ""}>100%</span>
                         </div>
                       </div>
                     </motion.div>
@@ -427,34 +434,34 @@ export default function SavingsGoalsModal({
             {/* Quick Deposit Modal Popup */}
             <AnimatePresence>
               {depositModalGoal && (
-                <div className="absolute inset-0 z-20 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-6">
+                <div className="absolute inset-0 z-20 bg-surface-overlay backdrop-blur-sm flex items-center justify-center p-6">
                   <motion.div
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.95 }}
-                    className="w-full max-w-sm bg-[#0f1523] border border-slate-800 rounded-lg p-5 space-y-4 shadow-2xl"
+                    className="w-full max-w-sm bg-surface-2 border border-border-default rounded-card p-5 space-y-4 shadow-elevation-modal"
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <span className="text-lg">{depositModalGoal.emoji}</span>
-                        <h4 className="text-sm font-semibold text-white">Deposit to {depositModalGoal.title}</h4>
+                        <h4 className="text-sm font-semibold text-text-primary">Deposit to {depositModalGoal.title}</h4>
                       </div>
-                      <button onClick={() => setDepositModalGoal(null)} className="text-slate-400 hover:text-white">
+                      <button onClick={() => setDepositModalGoal(null)} className="text-text-secondary hover:text-text-primary cursor-pointer">
                         <X className="h-4 w-4" />
                       </button>
                     </div>
 
                     <div className="space-y-2">
-                      <label className="text-xs text-slate-400 font-medium">Enter Amount ({currencySymbol})</label>
+                      <label className="text-xs text-text-secondary font-medium">Enter Amount ({currencySymbol})</label>
                       <div className="relative">
-                        <span className="absolute left-3 top-2 text-slate-400 font-mono">{currencySymbol}</span>
+                        <span className="absolute left-3 top-2 text-text-muted font-mono">{currencySymbol}</span>
                         <input
                           type="number"
                           autoFocus
                           value={depositAmount}
                           onChange={e => setDepositAmount(e.target.value)}
                           placeholder="100"
-                          className="w-full pl-8 pr-3 py-1.5 rounded-md bg-slate-900 border border-slate-700 text-white font-mono-nums text-sm outline-none focus:border-blue-500"
+                          className="w-full pl-8 pr-3 py-1.5 rounded-control bg-surface-3 border border-border-default text-text-primary font-mono-nums text-sm outline-none focus-ring"
                         />
                       </div>
 
@@ -465,7 +472,7 @@ export default function SavingsGoalsModal({
                             key={val}
                             type="button"
                             onClick={() => setDepositAmount(String(val))}
-                            className="flex-1 py-1 rounded-md bg-slate-800 hover:bg-slate-700 text-[11px] font-mono-nums text-slate-300 border border-slate-700/60 transition-colors"
+                            className="flex-1 py-1 rounded-control bg-surface-3 hover:bg-surface-hover text-[11px] font-mono-nums text-text-secondary hover:text-text-primary border border-border-subtle transition-colors cursor-pointer"
                           >
                             +{val}
                           </button>
@@ -476,13 +483,13 @@ export default function SavingsGoalsModal({
                     <div className="flex items-center gap-2 pt-2">
                       <button
                         onClick={() => setDepositModalGoal(null)}
-                        className="flex-1 py-1.5 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium transition-colors"
+                        className="flex-1 py-1.5 rounded-control bg-surface-3 hover:bg-surface-hover text-text-secondary text-xs font-medium transition-colors cursor-pointer"
                       >
                         Cancel
                       </button>
                       <button
                         onClick={() => handleQuickDeposit(depositAmount)}
-                        className="flex-1 py-1.5 rounded-md bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold transition-colors"
+                        className="flex-1 py-1.5 rounded-control bg-brand hover:bg-brand-hover active:bg-brand-active text-white text-xs font-semibold transition-colors shadow-elevation-sm cursor-pointer"
                       >
                         Confirm Deposit
                       </button>

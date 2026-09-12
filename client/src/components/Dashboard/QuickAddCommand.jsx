@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { Sparkles, Command, ArrowRight, CornerDownLeft, X, CheckCircle2, Calendar, Tag, DollarSign, Repeat, ArrowUpRight, ArrowDownRight, Layers } from "lucide-react"
+import { Command, ArrowRight, CornerDownLeft, X, CheckCircle2, Calendar, Tag, DollarSign, Repeat } from "lucide-react"
 import { parseQuickAdd, CATEGORY_COLORS } from "../../utils/quickAddParser"
 import { formatNumber } from "../../utils/formatUtils"
 
@@ -71,7 +71,7 @@ export default function QuickAddCommand({ isOpen, onClose, onSave, currencySymbo
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-slate-950/80 backdrop-blur-md"
+            className="fixed inset-0 bg-surface-overlay backdrop-blur-sm"
           />
 
           {/* Omnibar Dialog Card */}
@@ -80,11 +80,11 @@ export default function QuickAddCommand({ isOpen, onClose, onSave, currencySymbo
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.98, y: -10 }}
             transition={{ duration: 0.15 }}
-            className="relative w-full max-w-xl bg-[#0f1523] border border-slate-800 rounded-lg shadow-2xl overflow-hidden z-10"
+            className="relative w-full max-w-xl bg-surface-2 border border-border-default rounded-modal shadow-elevation-modal overflow-hidden z-10"
           >
             {/* Input Header */}
-            <div className="flex items-center gap-3 px-4 py-3.5 border-b border-slate-800">
-              <div className="p-1.5 rounded bg-slate-800 text-blue-400">
+            <div className="flex items-center gap-3 px-4 py-3.5 border-b border-border-default">
+              <div className="p-1.5 rounded-control bg-surface-3 text-brand">
                 <Command className="h-4 w-4" />
               </div>
               <input
@@ -93,11 +93,11 @@ export default function QuickAddCommand({ isOpen, onClose, onSave, currencySymbo
                 onChange={(e) => setQuery(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder="Type naturally... e.g. 'Spent $45 on groceries yesterday'"
-                className="w-full bg-transparent text-sm sm:text-base text-white font-medium placeholder:text-slate-500 outline-none"
+                className="w-full bg-transparent text-sm sm:text-base text-text-primary font-medium placeholder:text-text-muted outline-none"
               />
               <button
                 onClick={onClose}
-                className="text-slate-400 hover:text-white p-1 rounded hover:bg-slate-800 transition-colors cursor-pointer"
+                className="text-text-secondary hover:text-text-primary p-1 rounded-control hover:bg-surface-hover transition-colors cursor-pointer"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -106,12 +106,12 @@ export default function QuickAddCommand({ isOpen, onClose, onSave, currencySymbo
             {/* Live Parsing Preview Area */}
             <div className="p-4 space-y-3">
               {parsedResult ? (
-                <div className="p-3.5 rounded-lg bg-slate-900 border border-slate-800 space-y-2.5">
+                <div className="p-3.5 rounded-card bg-surface-3 border border-border-default space-y-2.5">
                   <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-semibold uppercase tracking-[0.06em] text-slate-500">
+                    <span className="text-[11px] font-semibold uppercase tracking-[0.06em] text-text-muted">
                       Live Parsed Result
                     </span>
-                    <span className={`text-[11px] font-semibold font-mono-nums px-2 py-0.5 rounded border ${parsedResult.type === 'income' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-rose-500/10 border-rose-500/20 text-rose-400'}`}>
+                    <span className={`text-[11px] font-semibold font-mono-nums px-2 py-0.5 rounded-badge border ${parsedResult.type === 'income' ? 'bg-positive/10 border-positive/20 text-positive' : 'bg-negative/10 border-negative/20 text-negative'}`}>
                       {parsedResult.type === 'income' ? 'Income (+)' : 'Expense (-)'}
                     </span>
                   </div>
@@ -119,32 +119,32 @@ export default function QuickAddCommand({ isOpen, onClose, onSave, currencySymbo
                   {/* Detected Chips Grid */}
                   <div className="flex flex-wrap items-center gap-2">
                     {/* Amount Chip */}
-                    <div className="flex items-center gap-1 px-3 py-1.5 rounded bg-slate-800/80 border border-white/[0.08] text-white font-mono-nums text-sm font-bold shadow-sm">
-                      <DollarSign className="h-3.5 w-3.5 text-blue-400 -mr-1" />
+                    <div className="flex items-center gap-1 px-3 py-1.5 rounded-control bg-surface-1 border border-border-subtle text-text-primary font-mono-nums text-sm font-bold shadow-elevation-sm">
+                      <DollarSign className="h-3.5 w-3.5 text-brand -mr-1" />
                       <span>{currencySymbol}{formatNumber(parsedResult.amount, currencySymbol)}</span>
                     </div>
 
                     {/* Category Chip */}
-                    <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded border text-xs font-semibold ${categoryTheme.bg} ${categoryTheme.border} ${categoryTheme.text} shadow-sm`}>
+                    <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-badge border text-xs font-semibold ${categoryTheme.badge} shadow-elevation-sm`}>
                       <Tag className="h-3.5 w-3.5 opacity-80" />
                       <span>{parsedResult.category}</span>
                     </div>
 
                     {/* Date Chip */}
-                    <div className="flex items-center gap-1.5 px-3 py-1.5 rounded bg-slate-800/60 border border-white/[0.05] text-slate-300 text-xs font-medium">
-                      <Calendar className="h-3.5 w-3.5 text-slate-400" />
+                    <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-control bg-surface-1 border border-border-subtle text-text-secondary text-xs font-medium">
+                      <Calendar className="h-3.5 w-3.5 text-text-muted" />
                       <span>{parsedResult.dateLabel} ({parsedResult.date})</span>
                     </div>
 
                     {/* Title Chip */}
-                    <div className="flex items-center gap-1.5 px-3 py-1.5 rounded bg-slate-800/60 border border-white/[0.05] text-slate-200 text-xs font-medium">
-                      <span className="text-slate-400">For:</span>
-                      <span className="font-semibold text-white truncate max-w-[150px]">{parsedResult.title}</span>
+                    <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-control bg-surface-1 border border-border-subtle text-text-secondary text-xs font-medium">
+                      <span className="text-text-muted">For:</span>
+                      <span className="font-semibold text-text-primary truncate max-w-[150px]">{parsedResult.title}</span>
                     </div>
 
                     {/* Recurring Badge */}
                     {parsedResult.isRecurring && (
-                      <div className="flex items-center gap-1 px-2.5 py-1 rounded bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-medium">
+                      <div className="flex items-center gap-1 px-2.5 py-1 rounded-badge bg-brand/10 border border-brand/20 text-brand text-xs font-medium">
                         <Repeat className="h-3 w-3" />
                         <span>Recurring</span>
                       </div>
@@ -154,7 +154,7 @@ export default function QuickAddCommand({ isOpen, onClose, onSave, currencySymbo
               ) : (
                 /* Sample Prompts when input is empty */
                 <div className="space-y-2">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.06em] text-slate-500">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.06em] text-text-muted">
                     Quick Suggestions
                   </p>
                   <div className="flex flex-wrap gap-2">
@@ -165,9 +165,9 @@ export default function QuickAddCommand({ isOpen, onClose, onSave, currencySymbo
                           setQuery(prompt)
                           inputRef.current?.focus()
                         }}
-                        className="text-xs text-slate-300 hover:text-white px-2.5 py-1 rounded bg-slate-900 hover:bg-slate-800 border border-slate-800 text-left flex items-center gap-1.5 cursor-pointer transition-colors"
+                        className="text-xs text-text-secondary hover:text-text-primary px-2.5 py-1 rounded-control bg-surface-1 hover:bg-surface-hover border border-border-subtle text-left flex items-center gap-1.5 cursor-pointer transition-colors"
                       >
-                        <ArrowRight className="h-3 w-3 text-slate-400" />
+                        <ArrowRight className="h-3 w-3 text-text-muted" />
                         <span>{prompt}</span>
                       </button>
                     ))}
@@ -177,22 +177,22 @@ export default function QuickAddCommand({ isOpen, onClose, onSave, currencySymbo
 
               {/* Just recorded feedback banner */}
               {justRecorded && (
-                <div className="flex items-center gap-2 p-2.5 rounded bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-medium">
-                  <CheckCircle2 className="h-4 w-4 text-emerald-400" />
+                <div className="flex items-center gap-2 p-2.5 rounded-control bg-positive/10 border border-positive/20 text-positive text-xs font-medium">
+                  <CheckCircle2 className="h-4 w-4 text-positive" />
                   <span className="font-mono-nums">Recorded: {currencySymbol}{formatNumber(justRecorded.amount, currencySymbol)} for {justRecorded.title}</span>
                 </div>
               )}
             </div>
 
             {/* Footer Bar with Keyboard Shortcuts */}
-            <div className="px-4 py-2.5 bg-slate-900 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400">
+            <div className="px-4 py-2.5 bg-surface-1 border-t border-border-default flex items-center justify-between text-xs text-text-muted">
               <div className="flex items-center gap-3">
                 <span className="flex items-center gap-1">
-                  <kbd className="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 font-mono-nums text-[10px] text-slate-300">↵ Enter</kbd>
+                  <kbd className="px-1.5 py-0.5 rounded-badge bg-surface-2 border border-border-default font-mono-nums text-[10px] text-text-secondary">↵ Enter</kbd>
                   to save
                 </span>
                 <span className="flex items-center gap-1">
-                  <kbd className="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 font-mono-nums text-[10px] text-slate-300">Esc</kbd>
+                  <kbd className="px-1.5 py-0.5 rounded-badge bg-surface-2 border border-border-default font-mono-nums text-[10px] text-text-secondary">Esc</kbd>
                   to close
                 </span>
               </div>
@@ -200,7 +200,7 @@ export default function QuickAddCommand({ isOpen, onClose, onSave, currencySymbo
               {parsedResult?.isValid && (
                 <button
                   onClick={handleSubmit}
-                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded bg-blue-600 hover:bg-blue-500 text-white font-medium text-xs transition-colors cursor-pointer"
+                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded-control bg-brand hover:bg-brand-hover active:bg-brand-active text-white font-medium text-xs transition-colors shadow-elevation-sm cursor-pointer"
                 >
                   <span>Confirm Entry</span>
                   <CornerDownLeft className="h-3 w-3" />

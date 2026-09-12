@@ -1,11 +1,12 @@
+import { useMemo } from "react"
 import { 
   Activity, 
   PieChart as PieIcon, 
   TrendingDown, 
-  Percent, 
-  Award
+  Percent
 } from "lucide-react"
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts"
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Sector } from "recharts"
+import { motion, AnimatePresence } from "framer-motion"
 import FinancialHealthCard from "./FinancialHealthCard"
 import AnimatedCounter from "../ui/AnimatedCounter"
 import { formatNumber, formatCompactNumber } from "../../utils/formatUtils"
@@ -26,33 +27,81 @@ export default function AnalyticsView({
   categoryData = [],
   totalCategoryExpense = 0,
   activeCategoryIndex,
-  setActiveCategoryIndex
+  setActiveCategoryIndex,
+  renderActiveShape: propRenderActiveShape
 }) {
-  const formatYAxis = (value) => {
-    if (value === 0) return '0'
-    return `${currencySymbol}${formatCompactNumber(value, currencySymbol)}`
+  const formatYAxis = (val) => {
+    if (val === 0) return '0'
+    if (val >= 100000 && currencySymbol === '₹') return `₹${Math.round(val / 100000)}L`
+    if (val >= 1000) return `${currencySymbol}${Math.round(val / 1000)}k`
+    return `${currencySymbol}${val}`
   }
-  const CustomTooltip = ({ active, payload, label, currencySymbol }) => {
+
+  const computedCategoryExpense = useMemo(() => {
+    return categoryData.reduce((acc, cat) => acc + cat.value, 0)
+  }, [categoryData])
+
+  const totalCatExpense = totalCategoryExpense > 0 ? totalCategoryExpense : computedCategoryExpense
+
+  const displayCategories = useMemo(() => {
+    if (!categoryData || categoryData.length === 0) return []
+    return categoryData.map(cat => ({
+      name: cat.name,
+      value: cat.value,
+      pct: totalCatExpense > 0 ? `${((cat.value / totalCatExpense) * 100).toFixed(1)}%` : "0%",
+      color: getCategoryStyle(cat.name).base
+    }))
+  }, [categoryData, totalCatExpense])
+
+  const renderActiveShape = (props) => {
+    if (propRenderActiveShape) return propRenderActiveShape(props)
+    const { cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill } = props
+    return (
+      <g className="cursor-pointer transition-all duration-300">
+        <Sector
+          cx={cx}
+          cy={cy}
+          innerRadius={outerRadius + 3}
+          outerRadius={outerRadius + 8}
+          startAngle={startAngle}
+          endAngle={endAngle}
+          fill={fill}
+          opacity={0.35}
+        />
+        <Sector
+          cx={cx}
+          cy={cy}
+          innerRadius={innerRadius - 2}
+          outerRadius={outerRadius + 4}
+          startAngle={startAngle}
+          endAngle={endAngle}
+          fill={fill}
+        />
+      </g>
+    )
+  }
+
+  const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
       const inc = payload.find(p => p.dataKey === 'income')?.value || 0
       const exp = payload.find(p => p.dataKey === 'expense')?.value || 0
       const net = inc - exp
       return (
-        <div className="bg-[#0f1523] border border-slate-700 p-3 rounded-lg shadow-xl min-w-[160px]">
-          <p className="text-slate-300 text-[11px] font-semibold uppercase tracking-wider mb-2">{label}</p>
-          <div className="space-y-1.5">
-            <div className="flex items-center justify-between gap-4 text-[13px]">
-              <span className="text-slate-400 font-medium">Income</span>
-              <span className="text-emerald-400 font-mono-nums font-semibold">{currencySymbol}{formatNumber(inc, currencySymbol)}</span>
+        <div className="bg-surface-1 border border-border-default p-3 rounded-xl shadow-elevation-lg min-w-[160px]">
+          <p className="text-text-secondary text-[11px] font-semibold uppercase tracking-wider mb-2">{label}</p>
+          <div className="space-y-1.5 text-xs">
+            <div className="flex items-center justify-between gap-4">
+              <span className="text-text-secondary font-medium">Income</span>
+              <span className="text-emerald-400 font-mono font-semibold">{currencySymbol}{formatNumber(inc, currencySymbol, 0, 0)}</span>
             </div>
-            <div className="flex items-center justify-between gap-4 text-[13px]">
-              <span className="text-slate-400 font-medium">Expense</span>
-              <span className="text-rose-400 font-mono-nums font-semibold">{currencySymbol}{formatNumber(exp, currencySymbol)}</span>
+            <div className="flex items-center justify-between gap-4">
+              <span className="text-text-secondary font-medium">Expense</span>
+              <span className="text-rose-400 font-mono font-semibold">{currencySymbol}{formatNumber(exp, currencySymbol, 0, 0)}</span>
             </div>
-            <div className="border-t border-slate-700/80 pt-1.5 mt-1.5 flex items-center justify-between gap-4 text-[13px]">
-              <span className="text-slate-300 font-medium">Net</span>
-              <span className={`font-mono-nums font-bold ${net >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
-                {net < 0 ? '-' : '+'}{currencySymbol}{formatNumber(Math.abs(net), currencySymbol)}
+            <div className="border-t border-border-default pt-1.5 mt-1.5 flex items-center justify-between gap-4">
+              <span className="text-text-primary font-medium">Net</span>
+              <span className={`font-mono font-bold ${net >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                {net < 0 ? '-' : '+'}{currencySymbol}{formatNumber(Math.abs(net), currencySymbol, 0, 0)}
               </span>
             </div>
           </div>
@@ -67,183 +116,248 @@ export default function AnalyticsView({
       {/* Top Analytics KPI Bar */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
         {/* Savings Rate */}
-        <div className="finance-card p-4">
+        <div className="bg-surface-1 border border-border-default rounded-xl p-4 shadow-elevation-sm hover:border-border-strong transition-colors">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-semibold uppercase tracking-[0.06em] text-slate-500">Savings Rate</span>
-            <div className="p-1 rounded bg-slate-800 text-emerald-400">
+            <span className="text-[11px] font-semibold uppercase tracking-[0.06em] text-text-secondary">Savings Rate</span>
+            <div className="p-1 rounded-lg bg-emerald-950/60 text-emerald-400 border border-emerald-800/40">
               <Percent className="h-3.5 w-3.5" />
             </div>
           </div>
-          <p className="text-[20px] sm:text-[26px] font-semibold text-emerald-400 font-mono-nums mt-1 leading-tight">
+          <p className="text-[20px] sm:text-[26px] font-semibold text-emerald-400 font-mono mt-1 leading-tight">
             <AnimatedCounter value={savingsRate} decimals={1} suffix="%" />
           </p>
-          <p className="text-xs text-slate-400 font-normal mt-0.5">Surplus retention ratio</p>
+          <p className="text-xs text-text-secondary font-normal mt-0.5">Surplus retention ratio</p>
         </div>
 
         {/* Avg Transaction */}
-        <div className="finance-card p-4">
+        <div className="bg-surface-1 border border-border-default rounded-xl p-4 shadow-elevation-sm hover:border-border-strong transition-colors">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-semibold uppercase tracking-[0.06em] text-slate-500">Average Expense</span>
-            <div className="p-1 rounded bg-slate-800 text-blue-400">
+            <span className="text-[11px] font-semibold uppercase tracking-[0.06em] text-text-secondary">Average Expense</span>
+            <div className="p-1 rounded-lg bg-blue-950/60 text-blue-400 border border-blue-800/40">
               <Activity className="h-3.5 w-3.5" />
             </div>
           </div>
-          <p className="text-[20px] sm:text-[26px] font-semibold text-white font-mono-nums mt-1 leading-tight">
+          <p className="text-[20px] sm:text-[26px] font-semibold text-white font-mono mt-1 leading-tight">
             <AnimatedCounter value={avgTransaction} prefix={currencySymbol} />
           </p>
-          <p className="text-xs text-slate-400 font-normal mt-0.5">Average ticket per expense</p>
+          <p className="text-xs text-text-secondary font-normal mt-0.5">Average ticket per expense</p>
         </div>
 
         {/* Top Outflow Category */}
-        <div className="finance-card p-4">
+        <div className="bg-surface-1 border border-border-default rounded-xl p-4 shadow-elevation-sm hover:border-border-strong transition-colors">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-semibold uppercase tracking-[0.06em] text-slate-500">Top Expense Category</span>
-            <div className="p-1 rounded bg-slate-800 text-rose-400">
+            <span className="text-[11px] font-semibold uppercase tracking-[0.06em] text-text-secondary">Top Expense Category</span>
+            <div className="p-1 rounded-lg bg-rose-950/60 text-rose-400 border border-rose-800/40">
               <TrendingDown className="h-3.5 w-3.5" />
             </div>
           </div>
           <p className="text-[20px] sm:text-[26px] font-semibold text-rose-400 truncate mt-1 leading-tight">
             {topCategory.name}
           </p>
-          <p className="text-xs text-slate-400 font-normal mt-0.5 font-mono-nums">
+          <p className="text-xs text-text-secondary font-normal mt-0.5 font-mono">
             {currencySymbol}{formatNumber(topCategory.amount, currencySymbol, 0, 0)} total
           </p>
         </div>
 
         {/* Category Count */}
-        <div className="finance-card p-4">
+        <div className="bg-surface-1 border border-border-default rounded-xl p-4 shadow-elevation-sm hover:border-border-strong transition-colors">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-semibold uppercase tracking-[0.06em] text-slate-500">Categories Used</span>
-            <div className="p-1 rounded bg-slate-800 text-blue-400">
+            <span className="text-[11px] font-semibold uppercase tracking-[0.06em] text-text-secondary">Categories Used</span>
+            <div className="p-1 rounded-lg bg-indigo-950/60 text-indigo-400 border border-indigo-800/40">
               <PieIcon className="h-3.5 w-3.5" />
             </div>
           </div>
-          <p className="text-[20px] sm:text-[26px] font-semibold text-white font-mono-nums mt-1 leading-tight">
-            {categoryData.length}
+          <p className="text-[20px] sm:text-[26px] font-semibold text-white font-mono mt-1 leading-tight">
+            {displayCategories.length}
           </p>
-          <p className="text-xs text-slate-400 font-normal mt-0.5">Active partitions</p>
+          <p className="text-xs text-text-secondary font-normal mt-0.5">Active partitions</p>
         </div>
       </div>
 
       {/* Cashflow Velocity + Donut Breakdown */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Cashflow Velocity */}
-        <div className="lg:col-span-2 finance-card p-5">
-          <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+        <div className="lg:col-span-2 bg-surface-1 border border-border-default rounded-xl p-5 shadow-elevation-sm">
+          <div className="flex items-center justify-between pb-3 border-b border-border-subtle">
             <div>
-              <h2 className="text-[19px] font-bold text-white tracking-tight flex items-center gap-2">
-                <Activity className="h-3.5 w-3.5 text-blue-400" />
+              <h2 className="text-[16px] font-bold text-white tracking-tight flex items-center gap-2">
+                <Activity className="h-4 w-4 text-blue-400" />
                 <span>Cashflow Trends</span>
               </h2>
-              <p className="text-[13px] text-slate-400 font-medium mt-1">Income vs expense timeline</p>
+              <p className="text-xs text-text-secondary font-normal mt-0.5">Income vs expense timeline</p>
             </div>
             <div className="flex items-center gap-4 text-xs">
               <div className="flex items-center gap-1.5">
-                <span className="h-2 w-2 rounded-full bg-emerald-500" />
-                <span className="text-[11px] text-slate-400 font-semibold uppercase tracking-[0.06em]">Income</span>
+                <span className="h-2 w-2 rounded-full bg-positive" />
+                <span className="text-[11px] text-text-secondary font-semibold uppercase tracking-[0.06em]">Income</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <span className="h-2 w-2 rounded-full bg-rose-500" />
-                <span className="text-[11px] text-slate-400 font-semibold uppercase tracking-[0.06em]">Expense</span>
+                <span className="h-2 w-2 rounded-full bg-negative" />
+                <span className="text-[11px] text-text-secondary font-semibold uppercase tracking-[0.06em]">Expense</span>
               </div>
             </div>
           </div>
 
-          <div className="h-[180px] pt-2">
+          <div className="h-[185px] pt-2">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={trendData} margin={{ top: 10, right: 10, left: -15, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
-                <XAxis dataKey="date" stroke="#64748b" fontSize={11} tickLine={false} axisLine={false} />
-                <YAxis stroke="#64748b" fontSize={11} tickLine={false} axisLine={false} tickFormatter={formatYAxis} />
+              <BarChart data={trendData} margin={{ top: 10, right: 10, left: -15, bottom: 0 }} barGap={4}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} opacity={0.6} />
+                <XAxis dataKey="date" stroke="#64748B" fontSize={11} tickLine={false} axisLine={false} />
+                <YAxis stroke="#64748B" fontSize={11} tickLine={false} axisLine={false} tickFormatter={formatYAxis} />
                 <Tooltip 
                   cursor={{ fill: 'rgba(255,255,255,0.02)' }}
-                  content={<CustomTooltip currencySymbol={currencySymbol} />}
+                  content={<CustomTooltip />}
                 />
                 <Bar 
                   dataKey="income" 
-                  fill="#10b981" 
+                  fill="#10B981" 
                   radius={[3, 3, 0, 0]} 
                   name="Income" 
-                  maxBarSize={28}
-                  minPointSize={6}
+                  barSize={16}
+                  minPointSize={12}
                 />
                 <Bar 
                   dataKey="expense" 
-                  fill="#f43f5e" 
+                  fill="#F43F5E" 
                   radius={[3, 3, 0, 0]} 
                   name="Expense" 
-                  maxBarSize={28}
-                  minPointSize={6}
+                  barSize={16}
+                  minPointSize={12}
                 />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
 
-        {/* Donut Chart with Breakdown List */}
-        <div className="finance-card p-5 flex flex-col justify-between">
-          <div className="pb-2 border-b border-slate-800">
-            <h2 className="text-lg font-bold text-white tracking-tight flex items-center gap-2">
-              <PieIcon className="h-3.5 w-3.5 text-blue-400" />
+        {/* Donut Chart with Centered Animated HUD & Breakdown List */}
+        <div className="bg-surface-1 border border-border-default rounded-xl p-5 shadow-elevation-sm flex flex-col justify-between">
+          <div className="pb-2 border-b border-border-subtle">
+            <h2 className="text-sm font-semibold text-white tracking-tight flex items-center gap-2">
+              <PieIcon className="h-4 w-4 text-blue-400" />
               <span>Category Allocation</span>
             </h2>
-            <p className="text-xs text-slate-400 font-normal mt-0.5">Distribution of expenses</p>
+            <p className="text-xs text-text-secondary font-normal mt-0.5">Distribution of expenses</p>
           </div>
 
-          {categoryData.length > 0 ? (
+          {displayCategories.length > 0 ? (
             <div className="space-y-3 pt-2">
-              <div className="relative w-full h-[160px] flex items-center justify-center">
+              <div className="relative w-full h-[155px] flex items-center justify-center">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
-                      data={categoryData}
+                      data={displayCategories}
                       cx="50%"
                       cy="50%"
-                      innerRadius={44}
-                      outerRadius={62}
-                      paddingAngle={3}
+                      innerRadius={46}
+                      outerRadius={68}
+                      paddingAngle={2}
                       dataKey="value"
                       stroke="#0f1523"
                       strokeWidth={2}
+                      activeIndex={activeCategoryIndex !== null ? activeCategoryIndex : -1}
+                      activeShape={renderActiveShape}
+                      isAnimationActive={true}
+                      animationBegin={0}
+                      animationDuration={1500}
+                      animationEasing="ease-out"
                       onMouseEnter={(_, index) => setActiveCategoryIndex(index)}
                       onMouseLeave={() => setActiveCategoryIndex(null)}
+                      onClick={(_, index) => setActiveCategoryIndex(activeCategoryIndex === index ? null : index)}
                     >
-                      {categoryData.map((entry, index) => (
-                        <Cell 
-                          key={`cell-${index}`} 
-                          fill={getCategoryStyle(entry.name).base} 
-                          opacity={activeCategoryIndex === null || activeCategoryIndex === index ? 1 : 0.4}
-                          className="cursor-pointer"
-                        />
-                      ))}
+                      {displayCategories.map((entry, index) => {
+                        const isSelected = activeCategoryIndex === index
+                        const isAnySelected = activeCategoryIndex !== null
+                        return (
+                          <Cell 
+                            key={`cell-${index}`} 
+                            fill={entry.color} 
+                            opacity={!isAnySelected || isSelected ? 1 : 0.35}
+                            className="cursor-pointer transition-opacity duration-200"
+                          />
+                        )
+                      })}
                     </Pie>
                   </PieChart>
                 </ResponsiveContainer>
+
+                {/* Centered Animated HUD */}
+                <div className="absolute inset-0 flex items-center justify-center text-center pointer-events-none">
+                  <AnimatePresence mode="wait">
+                    {activeCategoryIndex !== null && displayCategories[activeCategoryIndex] ? (
+                      <motion.div
+                        key={`active-${displayCategories[activeCategoryIndex].name}`}
+                        initial={{ scale: 0.75, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        exit={{ scale: 0.75, opacity: 0 }}
+                        transition={{ duration: 0.15 }}
+                        className="flex flex-col items-center justify-center text-center px-1"
+                      >
+                        <span 
+                          className="text-[10px] font-bold uppercase tracking-wider truncate max-w-[85px]"
+                          style={{ color: displayCategories[activeCategoryIndex].color }}
+                        >
+                          {displayCategories[activeCategoryIndex].name}
+                        </span>
+                        <span className="text-[14px] font-bold text-white font-mono leading-tight mt-0.5">
+                          {currencySymbol}{formatNumber(Math.round(displayCategories[activeCategoryIndex].value), currencySymbol, 0, 0)}
+                        </span>
+                        <span 
+                          className="text-[9px] font-semibold px-1.5 py-0.5 rounded-full mt-0.5"
+                          style={{ 
+                            backgroundColor: `${displayCategories[activeCategoryIndex].color}25`,
+                            color: displayCategories[activeCategoryIndex].color 
+                          }}
+                        >
+                          {displayCategories[activeCategoryIndex].pct}
+                        </span>
+                      </motion.div>
+                    ) : (
+                      <motion.div
+                        key="default-center"
+                        initial={{ scale: 0.85, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        exit={{ scale: 0.85, opacity: 0 }}
+                        transition={{ duration: 0.15 }}
+                        className="flex flex-col items-center justify-center text-center"
+                      >
+                        <span className="text-[9px] font-semibold uppercase tracking-wider text-text-secondary">
+                          TOTAL SPENT
+                        </span>
+                        <span className="text-[15px] font-bold text-white font-mono leading-tight mt-0.5">
+                          {currencySymbol}{formatNumber(Math.round(totalCatExpense), currencySymbol, 0, 0)}
+                        </span>
+                        <span className="text-[10px] text-text-secondary mt-0.5">
+                          {displayCategories.length} categories
+                        </span>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
               </div>
 
               {/* Category Breakdown Table */}
-              <div className="space-y-1 max-h-[140px] overflow-y-auto pr-1">
-                {categoryData.map((cat, idx) => {
-                  const color = getCategoryStyle(cat.name).base
-                  const percent = totalCategoryExpense > 0 ? ((cat.value / totalCategoryExpense) * 100).toFixed(1) : 0
+              <div className="space-y-1 max-h-[140px] overflow-y-auto pr-1 [scrollbar-width:none]">
+                {displayCategories.map((cat, idx) => {
+                  const isHovered = activeCategoryIndex === idx
 
                   return (
                     <div
                       key={cat.name}
+                      onClick={() => setActiveCategoryIndex(activeCategoryIndex === idx ? null : idx)}
                       onMouseEnter={() => setActiveCategoryIndex(idx)}
                       onMouseLeave={() => setActiveCategoryIndex(null)}
-                      className={`flex items-center justify-between p-1.5 rounded text-xs transition-colors cursor-pointer ${
-                        activeCategoryIndex === idx ? 'bg-slate-800 text-white' : 'hover:bg-slate-850 text-slate-300'
+                      className={`flex items-center justify-between p-1.5 rounded-lg text-xs transition-all duration-150 cursor-pointer ${
+                        isHovered ? 'bg-surface-2 shadow-elevation-sm scale-[1.01]' : 'hover:bg-surface-2/40 text-text-primary'
                       }`}
                     >
                       <div className="flex items-center gap-2 min-w-0">
-                        <span className="h-2 w-2 rounded-full shrink-0" style={{ backgroundColor: color }} />
-                        <span className="font-medium truncate">{cat.name}</span>
+                        <span className="h-2 w-2 rounded-full shrink-0" style={{ backgroundColor: cat.color }} />
+                        <span className={`font-medium truncate ${isHovered ? 'text-white font-semibold' : 'text-text-primary'}`}>{cat.name}</span>
                       </div>
-                      <div className="flex items-center gap-3 font-mono-nums shrink-0">
-                        <span className="text-slate-400 text-[11px]">{percent}%</span>
+                      <div className="flex items-center gap-3 font-mono shrink-0">
+                        <span className="text-text-secondary text-[11px]">{cat.pct}</span>
                         <span className="font-semibold text-white">
-                          {currencySymbol}{formatNumber(cat.value, currencySymbol, 0, 0)}
+                          {currencySymbol}{formatNumber(Math.round(cat.value), currencySymbol, 0, 0)}
                         </span>
                       </div>
                     </div>
@@ -252,7 +366,7 @@ export default function AnalyticsView({
               </div>
             </div>
           ) : (
-            <div className="py-8 text-center text-slate-500 text-xs">
+            <div className="py-8 text-center text-text-muted text-xs">
               No category data available yet.
             </div>
           )}

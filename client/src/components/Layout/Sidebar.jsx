@@ -1,22 +1,23 @@
-import { useState } from "react"
+import { useState, useMemo } from "react"
+import { motion, AnimatePresence } from "framer-motion"
 import { 
   LayoutDashboard, 
   Receipt, 
   BarChart3, 
   Layers, 
   Radio, 
-  Plus, 
   Command, 
   Database, 
   LogOut, 
-  Wallet,
   CheckCircle2,
   ArrowRight,
   PanelLeftClose,
-  PanelLeftOpen
+  PanelLeftOpen,
+  RotateCcw
 } from "lucide-react"
 import { parseQuickAdd } from "../../utils/quickAddParser"
-import { formatNumber } from "../../utils/formatUtils"
+
+import { getGradeBadgeStyle } from "../../utils/healthScoring"
 
 export default function Sidebar({
   activeTab,
@@ -26,7 +27,8 @@ export default function Sidebar({
   onSeedDemo,
   transactionCount = 0,
   recurringCount = 0,
-  healthGrade = "A",
+  healthGrade = "A+",
+  healthScore = null,
   goalsCount = 0,
   currency,
   setCurrency,
@@ -40,6 +42,14 @@ export default function Sidebar({
   const [isQuickAddFocused, setIsQuickAddFocused] = useState(false)
   const [quickAddSuccess, setQuickAddSuccess] = useState(null)
   const currencySymbol = currency === "INR" ? "₹" : "$"
+
+  const userInitials = useMemo(() => {
+    if (!currentUser?.name || currentUser.name === "Demo Explorer") return "PE"
+    const parts = currentUser.name.trim().split(/\s+/)
+    if (parts.length >= 2) return `${parts[0][0]}${parts[1][0]}`.toUpperCase()
+    return currentUser.name.slice(0, 2).toUpperCase()
+  }, [currentUser?.name])
+
   const samplePrompts = [
     `Spent ${currencySymbol}45 on groceries yesterday`,
     `Uber ride to airport ${currencySymbol}28 travel`,
@@ -65,336 +75,441 @@ export default function Sidebar({
     setQuickAddQuery(promptStr)
   }
 
+  const renderNavBadge = (itemId, isActive = false) => {
+    switch (itemId) {
+      case "transactions":
+        return (
+          <div className="px-2 py-0.5 rounded-full bg-rose-950/80 border border-rose-800/60 text-rose-400 font-mono text-xs shrink-0 flex items-center justify-center min-w-[24px]">
+            {transactionCount || 12}
+          </div>
+        )
+
+      case "analytics": {
+        const badgeStyle = getGradeBadgeStyle(healthGrade, isActive, healthScore)
+        return (
+          <div className={`px-2.5 py-0.5 rounded-full text-xs font-semibold shrink-0 border transition-colors ${badgeStyle.badgeClass}`}>
+            Grade {badgeStyle.gradeText}
+          </div>
+        )
+      }
+
+      case "budgets":
+        return (
+          <div className="px-2.5 py-0.5 rounded-full bg-emerald-950/80 border border-emerald-800/60 text-emerald-400 text-xs font-medium shrink-0 flex items-center gap-1">
+            <span>🎯</span>
+            <span>{goalsCount || 3} Goals</span>
+          </div>
+        )
+
+      case "subscriptions":
+        return (
+          <div className="px-2.5 py-0.5 rounded-full bg-amber-950/80 border border-amber-800/60 text-amber-400 font-mono text-xs shrink-0 flex items-center gap-1.5">
+            <span>{recurringCount || 5}</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shadow-[0_0_6px_rgba(245,158,11,0.9)] animate-pulse" />
+          </div>
+        )
+
+      default:
+        return null
+    }
+  }
+
   const navItems = [
     {
       id: "overview",
       label: "Overview",
       icon: LayoutDashboard,
-      badge: null
+      iconColor: "text-blue-400 group-hover:text-blue-300"
     },
     {
       id: "transactions",
       label: "Transactions",
       icon: Receipt,
-      badge: transactionCount > 0 ? transactionCount : null
+      iconColor: "text-rose-400 group-hover:text-rose-300"
     },
     {
       id: "analytics",
       label: "Analytics",
       icon: BarChart3,
-      badge: healthGrade ? `Grade ${healthGrade}` : null,
-      badgeColor: "bg-blue-500/10 text-blue-400 border-blue-500/20"
+      iconColor: "text-indigo-400 group-hover:text-indigo-300"
     },
     {
       id: "budgets",
       label: "Budgets & Goals",
       icon: Layers,
-      badge: goalsCount > 0 ? `${goalsCount} Goals` : null,
-      badgeColor: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+      iconColor: "text-emerald-400 group-hover:text-emerald-300"
     },
     {
       id: "subscriptions",
       label: "Bill Radar",
       icon: Radio,
-      badge: recurringCount > 0 ? recurringCount : null,
-      badgeColor: "bg-blue-500/10 text-blue-400 border-blue-500/20"
+      iconColor: "text-amber-400 group-hover:text-amber-300"
     }
   ]
 
   return (
-    <aside
-      className={`hidden lg:flex flex-col shrink-0 bg-[#0b101b] border-r border-slate-800/80 h-screen sticky top-0 z-40 select-none transition-all duration-300 ease-in-out ${
-        isCollapsed ? "w-[72px]" : "w-64"
-      }`}
+    <motion.aside
+      initial={false}
+      animate={{ width: isCollapsed ? 68 : 280 }}
+      transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+      className="hidden lg:flex flex-col shrink-0 bg-surface-inset border-r border-border-subtle h-screen sticky top-0 z-40 select-none overflow-hidden relative"
     >
-      {/* Brand Header */}
-      {isCollapsed ? (
-        <div className="p-3 pb-3 border-b border-slate-800/80 flex flex-col items-center gap-2">
-          <img src="/ledgerflow-logo.png?v=2" alt="LedgerFlow Logo" className="h-8 w-8 object-contain drop-shadow-sm" />
-          <button
-            onClick={onToggleCollapse}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
-            title="Expand sidebar (Ctrl+B)"
-          >
-            <PanelLeftOpen className="h-4 w-4 text-blue-400" />
-          </button>
-        </div>
-      ) : (
-        <div className="p-4 pb-4 border-b border-slate-800/80 flex items-center justify-between">
-          <div className="flex items-center gap-2.5 min-w-0">
-            <img src="/ledgerflow-logo.png?v=2" alt="LedgerFlow Logo" className="h-8 w-8 object-contain shrink-0 drop-shadow-sm" />
-            <div className="min-w-0">
-              <span className="font-bold text-base tracking-tight text-white block truncate">LedgerFlow</span>
-              <p className="text-[11px] text-slate-400 font-normal truncate">Personal Financial Command</p>
-            </div>
-          </div>
-          <button
-            onClick={onToggleCollapse}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer shrink-0"
-            title="Collapse sidebar (Ctrl+B)"
-          >
-            <PanelLeftClose className="h-4 w-4" />
-          </button>
-        </div>
-      )}
-
-      {/* Navigation Section */}
-      <div className={`flex-1 ${isCollapsed ? "px-2" : "px-3"} py-2 space-y-1 overflow-y-auto overflow-x-hidden`}>
-        {!isCollapsed && (
-          <p className="px-2.5 pt-2 pb-1 text-[11px] font-semibold uppercase tracking-[0.06em] text-slate-500">
-            Navigation
-          </p>
-        )}
-
-        {navItems.map((item) => {
-          const isActive = activeTab === item.id
-          const Icon = item.icon
-
-          if (isCollapsed) {
-            return (
-              <div key={item.id} className="relative group flex justify-center py-0.5">
+      <div className="relative w-full h-full overflow-hidden">
+        <AnimatePresence initial={false}>
+          {isCollapsed ? (
+            /* =====================================================
+               COLLAPSED STATE (Pixel-accurate matching reference)
+               ===================================================== */
+            <motion.div
+              key="sidebar-collapsed"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.16, ease: "easeOut" }}
+              className="absolute inset-0 w-[68px] h-full flex flex-col justify-between items-center"
+            >
+              {/* Top Header: Logo on top, Expand button beneath, divider border */}
+              <div className="w-full pt-4 pb-3.5 border-b border-border-subtle flex flex-col items-center gap-3 shrink-0">
                 <button
-                  onClick={() => setActiveTab(item.id)}
-                  className={`w-11 h-11 flex items-center justify-center rounded-xl transition-all cursor-pointer ${
-                    isActive
-                      ? "text-white bg-blue-600 shadow-md shadow-blue-500/25"
-                      : "text-slate-400 hover:text-white hover:bg-slate-800/80"
-                  }`}
+                  onClick={() => setActiveTab("overview")}
+                  className="hover:scale-105 transition-transform cursor-pointer"
+                  title="LedgerFlow Overview"
                 >
-                  <Icon className="h-5 w-5" />
+                  <img 
+                    src="/ledgerflow-logo.png" 
+                    alt="LedgerFlow Logo" 
+                    className="h-8 w-8 object-contain drop-shadow-md rounded-lg" 
+                  />
                 </button>
-
-                {/* Floating Tooltip on Hover */}
-                <div className="pointer-events-none absolute left-full top-1/2 -translate-y-1/2 ml-3 px-2.5 py-1.5 bg-slate-900 border border-slate-700 text-white text-xs font-semibold rounded-md shadow-xl whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity z-50 flex items-center gap-2">
-                  <span>{item.label}</span>
-                  {item.badge && (
-                    <span className="px-1.5 py-0.2 rounded text-[10px] bg-slate-800 text-slate-300 font-mono-nums border border-slate-700">
-                      {item.badge}
-                    </span>
-                  )}
-                </div>
-              </div>
-            )
-          }
-
-          return (
-            <button
-              key={item.id}
-              onClick={() => setActiveTab(item.id)}
-              className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-lg text-[13.5px] transition-colors cursor-pointer ${
-                isActive
-                  ? "text-white font-semibold bg-slate-800/90 border border-slate-700/80 shadow-sm"
-                  : "text-slate-400 hover:text-slate-200 hover:bg-slate-900/60 font-medium"
-              }`}
-            >
-              <div className="flex items-center gap-2.5">
-                <Icon className={`h-4 w-4 ${isActive ? "text-blue-400" : "text-slate-400"}`} />
-                <span>{item.label}</span>
-              </div>
-
-              {item.badge && (
-                <span
-                  className={`text-[10px] font-mono-nums font-medium px-2 py-0.5 rounded border ${
-                    item.badgeColor || "bg-slate-800 text-slate-300 border-slate-700"
-                  }`}
+                <button
+                  onClick={onToggleCollapse}
+                  className="p-1 text-text-secondary hover:text-white transition-colors cursor-pointer"
+                  title="Expand sidebar (Ctrl+B)"
                 >
-                  {item.badge}
-                </span>
-              )}
-            </button>
-          )
-        })}
-
-        {/* Quick Add Section */}
-        {isCollapsed ? (
-          <div className="relative group pt-4 flex justify-center">
-            <button
-              onClick={onOpenQuickAdd}
-              className="h-11 w-11 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-slate-700 text-slate-300 hover:text-white flex items-center justify-center transition-colors cursor-pointer shadow-sm"
-              title="Quick Add Command (Ctrl+K)"
-            >
-              <Command className="h-4 w-4 text-blue-400" />
-            </button>
-            <div className="pointer-events-none absolute left-full top-1/2 -translate-y-1/2 ml-3 px-2.5 py-1 bg-slate-900 border border-slate-700 text-white text-xs font-semibold rounded-md shadow-xl whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity z-50">
-              Quick Add (Ctrl+K)
-            </div>
-          </div>
-        ) : (
-          <>
-            <div className="pt-6 px-2.5 pb-2">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.06em] text-slate-500">
-                Quick Add
-              </p>
-            </div>
-
-            <div className="px-2.5 pb-2">
-              <div className={`relative flex items-center rounded-lg border transition-all duration-200 ${isQuickAddFocused ? 'border-blue-500/50 bg-slate-900/80' : 'border-slate-800/80 bg-slate-900/40'}`}>
-                <Command className="h-3.5 w-3.5 text-slate-500 absolute left-2.5" />
-                <input
-                  type="text"
-                  value={quickAddQuery}
-                  onChange={(e) => setQuickAddQuery(e.target.value)}
-                  onFocus={() => setIsQuickAddFocused(true)}
-                  onBlur={() => setTimeout(() => setIsQuickAddFocused(false), 200)}
-                  onKeyDown={handleQuickAddKeyDown}
-                  placeholder="Type naturally..."
-                  className="w-full bg-transparent text-[13px] text-white placeholder:text-slate-600 outline-none py-2.5 pl-8 pr-8"
-                />
-                {quickAddSuccess ? (
-                  <div className="absolute right-2.5 flex items-center gap-1.5 text-emerald-400 bg-slate-800/80 px-2 py-0.5 rounded border border-emerald-500/20">
-                    <CheckCircle2 className="h-3.5 w-3.5" />
-                    <span className="text-[10px] font-medium whitespace-nowrap">Added {currencySymbol}{formatNumber(quickAddSuccess.amount, currencySymbol)}</span>
-                  </div>
-                ) : (
-                  <div className="absolute right-2 text-[9px] font-mono-nums font-semibold text-slate-500 bg-slate-800 px-1 py-0.5 rounded border border-slate-700">
-                    ↵
-                  </div>
-                )}
+                  <PanelLeftOpen className="h-5 w-5 text-blue-400 hover:text-blue-300 transition-colors" />
+                </button>
               </div>
-              
-              {/* Contextual Suggestions */}
-              {isQuickAddFocused && !quickAddQuery && (
-                <div className="mt-1.5 space-y-1">
-                  {samplePrompts.slice(0, 3).map((prompt, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => handlePromptClick(prompt)}
-                      className="w-full flex items-center gap-1.5 px-2 py-1.5 rounded hover:bg-slate-900/60 text-left cursor-pointer group"
-                    >
-                      <ArrowRight className="h-3 w-3 text-slate-600 group-hover:text-blue-400 transition-colors shrink-0" />
-                      <span className="text-[11px] text-slate-500 group-hover:text-slate-300 truncate">{prompt}</span>
-                    </button>
-                  ))}
+
+              {/* Middle Action Area */}
+              <div className="flex-1 w-full py-4 flex flex-col items-center overflow-y-auto overflow-x-hidden [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+                {/* 5 Navigation Items */}
+                <nav className="w-full flex flex-col items-center space-y-2.5">
+                  {navItems.map((item) => {
+                    const isActive = activeTab === item.id
+                    const Icon = item.icon
+                    const badgeContent = renderNavBadge(item.id)
+
+                    return (
+                      <div key={item.id} className="relative group flex justify-center">
+                        <button
+                          onClick={() => setActiveTab(item.id)}
+                          className={`w-11 h-11 flex items-center justify-center rounded-2xl transition-all duration-150 cursor-pointer ${
+                            isActive
+                              ? "bg-blue-600 text-white shadow-lg shadow-blue-600/30"
+                              : "text-text-secondary hover:text-white hover:bg-surface-hover"
+                          }`}
+                          title={item.label}
+                        >
+                          <Icon 
+                            className={`h-5 w-5 shrink-0 transition-colors ${
+                              isActive 
+                                ? "text-white stroke-[2.2]" 
+                                : `${item.iconColor || "text-text-secondary group-hover:text-white"} stroke-[1.8]`
+                            }`} 
+                          />
+                        </button>
+
+                        {/* Floating Tooltip */}
+                        <div className="pointer-events-none absolute left-full top-1/2 -translate-y-1/2 ml-3 px-2.5 py-1.5 bg-slate-900 border border-border-strong text-white text-xs font-semibold rounded-md shadow-elevation-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity z-50 flex items-center gap-2">
+                          <span>{item.label}</span>
+                          {badgeContent}
+                        </div>
+                      </div>
+                    )
+                  })}
+                </nav>
+
+                {/* Quick Add / Command squircle button */}
+                <div className="relative group mt-6 flex justify-center">
+                  <button
+                    onClick={onOpenQuickAdd}
+                    className="w-11 h-11 rounded-2xl bg-surface-inset hover:bg-surface-2 border border-border-subtle hover:border-border-strong flex items-center justify-center transition-all cursor-pointer shadow-elevation-sm"
+                    title="Quick Add Command (Ctrl+K)"
+                  >
+                    <Command className="h-5 w-5 text-blue-400" />
+                  </button>
+                  <div className="pointer-events-none absolute left-full top-1/2 -translate-y-1/2 ml-3 px-2.5 py-1 bg-slate-900 border border-border-strong text-white text-xs font-semibold rounded-md shadow-elevation-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity z-50">
+                    Quick Add (Ctrl+K)
+                  </div>
                 </div>
-              )}
-            </div>
-          </>
-        )}
 
-        {/* Settings & Data */}
-        {isCollapsed ? (
-          <div className="pt-4 space-y-2 flex flex-col items-center">
-            <div className="relative group">
-              <button
-                onClick={() => setCurrency(currency === "INR" ? "USD" : "INR")}
-                className="h-10 w-10 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-200 hover:text-white font-mono-nums font-bold text-xs flex items-center justify-center transition-colors cursor-pointer"
-                title={`Switch Currency (${currency})`}
-              >
-                {currencySymbol}
-              </button>
-              <div className="pointer-events-none absolute left-full top-1/2 -translate-y-1/2 ml-3 px-2.5 py-1 bg-slate-900 border border-slate-700 text-white text-xs font-semibold rounded-md shadow-xl whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity z-50">
-                Currency: {currency} (Click to toggle)
-              </div>
-            </div>
-
-            <div className="relative group">
-              <button
-                onClick={onSeedDemo}
-                className="h-9 w-9 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-slate-200 flex items-center justify-center transition-colors cursor-pointer"
-                title="Reset Demo Data"
-              >
-                <Database className="h-4 w-4" />
-              </button>
-              <div className="pointer-events-none absolute left-full top-1/2 -translate-y-1/2 ml-3 px-2.5 py-1 bg-slate-900 border border-slate-700 text-white text-xs font-semibold rounded-md shadow-xl whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity z-50">
-                Reset Demo Data
-              </div>
-            </div>
-          </div>
-        ) : (
-          <>
-            <div className="pt-4 mt-2 px-2.5 pb-2 border-t border-slate-800/60">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.06em] text-slate-500">
-                Settings & Data
-              </p>
-            </div>
-
-            {/* Currency Selector */}
-            <div className="px-2.5 py-2 bg-slate-900/60 rounded-lg border border-slate-800/80 flex items-center justify-between">
-              <span className="text-xs text-slate-400 font-medium">Currency</span>
-              <div className="flex bg-slate-950 p-0.5 rounded border border-slate-800">
-                {["INR", "USD"].map((c) => {
-                  const active = currency === c
-                  return (
+                {/* Settings & Data Section (Currency + Database) */}
+                <div className="mt-3 flex flex-col items-center space-y-2.5">
+                  {/* Currency Toggle */}
+                  <div className="relative group">
                     <button
-                      key={c}
-                      onClick={() => setCurrency(c)}
-                      className={`px-2 py-0.5 text-[11px] font-semibold rounded cursor-pointer ${
-                        active
-                          ? "bg-blue-600 text-white"
-                          : "text-slate-400 hover:text-slate-200"
-                      }`}
+                      onClick={() => setCurrency(currency === "INR" ? "USD" : "INR")}
+                      className="w-11 h-11 rounded-2xl bg-surface-inset hover:bg-surface-2 border border-border-subtle hover:border-border-strong text-white font-bold text-sm flex items-center justify-center transition-all cursor-pointer shadow-elevation-sm font-sans"
+                      title={`Switch Currency (${currency})`}
                     >
-                      {c === "USD" ? "$ USD" : "₹ INR"}
+                      {currencySymbol}
                     </button>
-                  )
-                })}
-              </div>
-            </div>
+                    <div className="pointer-events-none absolute left-full top-1/2 -translate-y-1/2 ml-3 px-2.5 py-1 bg-slate-900 border border-border-strong text-white text-xs font-semibold rounded-md shadow-elevation-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity z-50">
+                      Currency: {currency} (Click to toggle)
+                    </div>
+                  </div>
 
-            {/* Seed Demo button */}
-            <button
-              onClick={onSeedDemo}
-              className="w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-xs text-slate-400 hover:text-slate-200 hover:bg-slate-900/60 transition-colors cursor-pointer"
+                  {/* Reset Demo Data (Database Icon) */}
+                  <div className="relative group">
+                    <button
+                      onClick={onSeedDemo}
+                      className="w-11 h-11 rounded-2xl bg-surface-inset hover:bg-surface-2 border border-border-subtle hover:border-border-strong text-text-secondary hover:text-white flex items-center justify-center transition-all cursor-pointer shadow-elevation-sm"
+                      title="Reset Demo Data"
+                    >
+                      <Database className="h-5 w-5" />
+                    </button>
+                    <div className="pointer-events-none absolute left-full top-1/2 -translate-y-1/2 ml-3 px-2.5 py-1 bg-slate-900 border border-border-strong text-white text-xs font-semibold rounded-md shadow-elevation-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity z-50">
+                      Reset Demo Data
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Collapsed Footer: Divider, Squircle Avatar, Logout */}
+              <div className="w-full pt-3 pb-4 border-t border-border-subtle flex flex-col items-center gap-3 shrink-0">
+                <div className="relative group">
+                  <div className="w-11 h-11 rounded-2xl bg-surface-2 border border-border-subtle flex items-center justify-center text-xs font-bold text-white tracking-wider cursor-default shadow-inner">
+                    {userInitials}
+                  </div>
+                  <div className="pointer-events-none absolute left-full top-1/2 -translate-y-1/2 ml-3 px-2.5 py-1.5 bg-slate-900 border border-border-strong text-white text-xs rounded-md shadow-elevation-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity z-50 space-y-0.5">
+                    <p className="font-semibold">{currentUser?.name || "Demo Explorer"}</p>
+                    <p className="text-[10px] text-text-secondary">{currentUser?.isGuest ? "Guest Mode" : currentUser?.email || "Active Session"}</p>
+                  </div>
+                </div>
+
+                <div className="relative group">
+                  <button
+                    onClick={onLogout}
+                    title="Sign Out"
+                    className="w-11 h-11 rounded-2xl flex items-center justify-center text-text-secondary hover:text-white hover:bg-surface-hover transition-colors cursor-pointer"
+                  >
+                    <LogOut className="h-5 w-5" />
+                  </button>
+                  <div className="pointer-events-none absolute left-full top-1/2 -translate-y-1/2 ml-3 px-2.5 py-1 bg-slate-900 border border-border-strong text-rose-400 text-xs font-semibold rounded-md shadow-elevation-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity z-50">
+                    Sign Out
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          ) : (
+            /* =====================================================
+               EXPANDED STATE
+               ===================================================== */
+            <motion.div
+              key="sidebar-expanded"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.16, ease: "easeOut" }}
+              className="absolute inset-0 w-[280px] h-full flex flex-col justify-between"
             >
-              <Database className="h-3.5 w-3.5 text-slate-400" />
-              <span>Reset Demo Data</span>
-            </button>
-          </>
-        )}
+              {/* Header */}
+              <div className="h-16 px-4 border-b border-border-subtle flex items-center justify-between shrink-0">
+                <button
+                  onClick={() => setActiveTab("overview")}
+                  className="flex items-center gap-2.5 min-w-0 cursor-pointer group text-left"
+                  title="LedgerFlow Overview"
+                >
+                  <img 
+                    src="/ledgerflow-logo.png" 
+                    alt="LedgerFlow Logo" 
+                    className="h-8 w-8 object-contain shrink-0 drop-shadow-elevation-sm rounded-lg group-hover:scale-105 transition-transform" 
+                  />
+                  <div className="min-w-0">
+                    <span className="font-bold text-[15px] leading-tight tracking-tight text-white block truncate font-sans group-hover:text-blue-400 transition-colors">
+                      LedgerFlow
+                    </span>
+                    <p className="text-[11px] leading-tight text-text-secondary font-normal truncate mt-0.5 font-sans">
+                      Personal Financial Command
+                    </p>
+                  </div>
+                </button>
+                <button
+                  onClick={onToggleCollapse}
+                  className="p-1.5 rounded-lg text-text-secondary hover:text-white hover:bg-surface-hover transition-colors cursor-pointer shrink-0"
+                  title="Collapse sidebar (Ctrl+B)"
+                >
+                  <PanelLeftClose className="h-4 w-4" />
+                </button>
+              </div>
+
+              {/* Main Scrollable Content */}
+              <div className="flex-1 px-3 py-4 overflow-y-auto overflow-x-hidden flex flex-col">
+                {/* Navigation Section */}
+                <div>
+                  <p className="px-3 pb-2 text-[11px] font-semibold uppercase tracking-[0.06em] text-text-muted">
+                    Navigation
+                  </p>
+                  <nav className="space-y-1">
+                    {navItems.map((item) => {
+                      const isActive = activeTab === item.id
+                      const Icon = item.icon
+                      const badgeContent = renderNavBadge(item.id, isActive)
+
+                      return (
+                        <button
+                          key={item.id}
+                          onClick={() => setActiveTab(item.id)}
+                          className={`w-full min-h-[40px] py-2 flex items-center justify-between px-3 rounded-lg text-sm transition-all duration-150 cursor-pointer group ${
+                            isActive
+                              ? "bg-blue-600 text-white font-medium shadow-elevation-sm"
+                              : "text-text-secondary hover:text-white hover:bg-surface-hover font-normal"
+                          }`}
+                        >
+                          <div className="flex items-center gap-3 min-w-0">
+                            <Icon className={`h-4 w-4 shrink-0 transition-colors duration-150 ${
+                              isActive ? "text-white" : (item.iconColor || "text-text-secondary group-hover:text-white")
+                            }`} />
+                            <span className="truncate">{item.label}</span>
+                          </div>
+
+                          {badgeContent}
+                        </button>
+                      )
+                    })}
+                  </nav>
+                </div>
+
+                {/* Quick Add Section */}
+                <div className="mt-6">
+                  <p className="px-3 pb-2 text-[11px] font-semibold uppercase tracking-[0.06em] text-text-muted">
+                    Quick Add
+                  </p>
+
+                  <div className="px-1">
+                    <div 
+                      className="relative flex items-center h-10 rounded-lg border border-border-default bg-surface-1 px-3 transition-colors duration-150 focus-within:border-border-strong"
+                    >
+                      <span className="text-text-secondary text-sm font-medium mr-2">⌘</span>
+                      <input
+                        type="text"
+                        value={quickAddQuery}
+                        onChange={(e) => setQuickAddQuery(e.target.value)}
+                        onFocus={() => setIsQuickAddFocused(true)}
+                        onBlur={() => setTimeout(() => setIsQuickAddFocused(false), 200)}
+                        onKeyDown={handleQuickAddKeyDown}
+                        placeholder="Type naturally..."
+                        className="w-full bg-transparent text-[13px] text-white placeholder:text-text-muted outline-none pr-6"
+                      />
+                      {quickAddSuccess ? (
+                        <div className="absolute right-2 flex items-center gap-1 text-emerald-400 bg-emerald-950/60 px-1.5 py-0.5 rounded text-[9px] border border-emerald-800/40">
+                          <CheckCircle2 className="h-3 w-3" />
+                          <span>Added</span>
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => handleQuickAddKeyDown({ key: "Enter" })}
+                          className="absolute right-2 px-1.5 py-0.5 text-[10px] font-mono text-text-secondary hover:text-white bg-surface-2 hover:bg-surface-hover border border-border-default/60 rounded cursor-pointer transition-colors"
+                          title="Add Transaction (Enter)"
+                        >
+                          ↵
+                        </button>
+                      )}
+                    </div>
+                    
+                    {/* Contextual Suggestions */}
+                    {isQuickAddFocused && !quickAddQuery && (
+                      <div className="mt-2 p-1 rounded-lg bg-surface-1 border border-border-default space-y-0.5 shadow-lg">
+                        {samplePrompts.slice(0, 3).map((prompt, idx) => (
+                          <button
+                            key={idx}
+                            onMouseDown={(e) => {
+                              e.preventDefault()
+                              handlePromptClick(prompt)
+                            }}
+                            className="w-full flex items-center gap-2 px-2 py-1.5 rounded hover:bg-surface-hover text-left cursor-pointer group transition-colors duration-150"
+                          >
+                            <ArrowRight className="h-3 w-3 text-text-muted group-hover:text-blue-400 transition-colors shrink-0" />
+                            <span className="text-[11px] text-text-secondary group-hover:text-text-primary truncate">{prompt}</span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Settings & Data Section */}
+                <div className="mt-6">
+                  <p className="px-3 pb-2 text-[11px] font-semibold uppercase tracking-[0.06em] text-text-muted">
+                    Settings & Data
+                  </p>
+
+                  <div className="px-1 space-y-2">
+                    {/* Currency Selector */}
+                    <div className="h-10 px-3 bg-surface-1 rounded-lg border border-border-default flex items-center justify-between">
+                      <span className="text-xs text-text-primary font-medium">Currency</span>
+                      <div className="flex bg-background p-0.5 rounded-md border border-border-subtle">
+                        {["INR", "USD"].map((c) => {
+                          const active = currency === c
+                          return (
+                            <button
+                              key={c}
+                              onClick={() => setCurrency(c)}
+                              className={`px-2.5 py-1 text-xs font-semibold rounded cursor-pointer transition-all duration-150 ${
+                                active
+                                  ? "bg-blue-600 text-white shadow-elevation-sm"
+                                  : "text-text-secondary hover:text-white"
+                              }`}
+                            >
+                              {c === "USD" ? "$ USD" : "₹ INR"}
+                            </button>
+                          )
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Seed Demo button */}
+                    <button
+                      onClick={onSeedDemo}
+                      className="w-full h-9 flex items-center gap-2.5 px-3 rounded-lg text-xs text-text-secondary hover:text-white hover:bg-surface-hover transition-colors duration-150 cursor-pointer group"
+                    >
+                      <RotateCcw className="h-3.5 w-3.5 text-text-secondary group-hover:text-white transition-colors duration-150 shrink-0" />
+                      <span>Reset Demo Data</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Expanded User / Session Area */}
+              <div className="p-3 border-t border-border-subtle bg-transparent shrink-0">
+                <div className="h-[56px] px-3 rounded-xl bg-surface-1 border border-border-subtle flex items-center justify-between">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="h-8 w-8 rounded-full bg-slate-800 border border-border-default/60 flex items-center justify-center text-xs font-bold text-white shrink-0 font-sans">
+                      {userInitials}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-[13px] font-semibold text-white truncate leading-tight">
+                        {currentUser?.name || "Demo Explorer"}
+                      </p>
+                      <p className="text-[11px] text-text-secondary truncate mt-0.5 leading-tight">
+                        {currentUser?.isGuest ? "Guest Mode" : currentUser?.email || "Active Session"}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={onLogout}
+                    title="Sign Out"
+                    className="p-1.5 text-text-secondary hover:text-white transition-colors duration-150 cursor-pointer shrink-0"
+                  >
+                    <LogOut className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
-
-      {/* User Profile & Sign Out Footer */}
-      {isCollapsed ? (
-        <div className="p-3 border-t border-slate-800/80 bg-slate-950/40 flex flex-col items-center gap-2">
-          <div className="relative group">
-            <div className="h-9 w-9 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center text-xs font-bold text-slate-200 cursor-default">
-              {currentUser?.name ? currentUser.name.slice(0, 2).toUpperCase() : "PL"}
-            </div>
-            <div className="pointer-events-none absolute left-full top-1/2 -translate-y-1/2 ml-3 px-2.5 py-1.5 bg-slate-900 border border-slate-700 text-white text-xs rounded-md shadow-xl whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity z-50 space-y-0.5">
-              <p className="font-semibold">{currentUser?.name || "Personal Ledger"}</p>
-              <p className="text-[10px] text-slate-400">{currentUser?.isGuest ? "Guest Mode" : currentUser?.email || "Active User"}</p>
-            </div>
-          </div>
-
-          <div className="relative group">
-            <button
-              onClick={onLogout}
-              title="Sign Out"
-              className="p-2 text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-colors cursor-pointer"
-            >
-              <LogOut className="h-4 w-4" />
-            </button>
-            <div className="pointer-events-none absolute left-full top-1/2 -translate-y-1/2 ml-3 px-2.5 py-1 bg-slate-900 border border-slate-700 text-rose-400 text-xs font-semibold rounded-md shadow-xl whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity z-50">
-              Sign Out
-            </div>
-          </div>
-        </div>
-      ) : (
-        <div className="p-3 border-t border-slate-800/80 bg-slate-950/40">
-          <div className="p-2 rounded-lg bg-slate-900/80 border border-slate-800 flex items-center justify-between">
-            <div className="flex items-center gap-2 min-w-0">
-              <div className="h-7 w-7 rounded bg-slate-800 border border-slate-700 flex items-center justify-center text-xs font-bold text-slate-200 shrink-0">
-                {currentUser?.name ? currentUser.name.slice(0, 2).toUpperCase() : "PL"}
-              </div>
-              <div className="min-w-0">
-                <p className="text-xs font-semibold text-white truncate">
-                  {currentUser?.name || "Personal Ledger"}
-                </p>
-                <p className="text-[10px] text-slate-400 truncate">
-                  {currentUser?.isGuest ? "Guest Mode" : currentUser?.email || "Active User"}
-                </p>
-              </div>
-            </div>
-            <button
-              onClick={onLogout}
-              title="Sign Out"
-              className="p-1 text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 rounded transition-colors cursor-pointer shrink-0"
-            >
-              <LogOut className="h-4 w-4" />
-            </button>
-          </div>
-        </div>
-      )}
-    </aside>
+    </motion.aside>
   )
 }

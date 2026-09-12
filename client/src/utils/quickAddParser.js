@@ -9,16 +9,8 @@ export const CATEGORY_KEYWORDS = {
   Other: ['other', 'misc', 'miscellaneous', 'cash', 'transfer']
 }
 
-export const CATEGORY_COLORS = {
-  Food: { bg: 'bg-rose-500/10', text: 'text-rose-400', border: 'border-rose-500/30' },
-  Travel: { bg: 'bg-indigo-500/10', text: 'text-indigo-400', border: 'border-indigo-500/30' },
-  Bills: { bg: 'bg-amber-500/10', text: 'text-amber-400', border: 'border-amber-500/30' },
-  Subscriptions: { bg: 'bg-sky-500/10', text: 'text-sky-400', border: 'border-sky-500/30' },
-  Entertainment: { bg: 'bg-violet-500/10', text: 'text-violet-400', border: 'border-violet-500/30' },
-  Shopping: { bg: 'bg-emerald-500/10', text: 'text-emerald-400', border: 'border-emerald-500/30' },
-  Salary: { bg: 'bg-emerald-500/10', text: 'text-emerald-400', border: 'border-emerald-500/30' },
-  Other: { bg: 'bg-slate-500/10', text: 'text-slate-400', border: 'border-slate-500/30' }
-}
+import { CATEGORY_COLORS } from './categoryColors'
+export { CATEGORY_COLORS }
 
 export function parseQuickAdd(query) {
   if (!query || !query.trim()) return null

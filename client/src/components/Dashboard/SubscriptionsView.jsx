@@ -1,60 +1,16 @@
 import { useMemo } from "react"
 import { formatNumber } from "../../utils/formatUtils"
 import { getCategoryStyle } from "../../utils/categoryColors"
+import { getSubscriptionBrand } from "../../utils/subscriptionLogos"
 import { 
   Radio, 
   Clock, 
-  Calendar, 
   Plus, 
   AlertTriangle, 
   CreditCard, 
-  Bell,
-  Dumbbell,
-  Wifi,
-  Zap,
-  ShoppingBag,
-  Film,
-  Headphones,
-  Home,
-  Coffee,
-  Tv,
-  Monitor
+  Bell
 } from "lucide-react"
 import AnimatedCounter from "../ui/AnimatedCounter"
-
-const getVisualIdentity = (title = '', category = '') => {
-  const style = getCategoryStyle(category)
-  const t = title.toLowerCase()
-  let icon = CreditCard
-
-  if (t.includes('netflix') || t.includes('hulu') || t.includes('prime') || t.includes('tv') || category.toLowerCase() === 'entertainment') {
-    icon = Film
-  } else if (t.includes('spotify') || t.includes('music')) {
-    icon = Headphones
-  } else if (t.includes('gym') || t.includes('fitness')) {
-    icon = Dumbbell
-  } else if (t.includes('internet') || t.includes('wifi') || t.includes('broadband')) {
-    icon = Wifi
-  } else if (t.includes('electric') || t.includes('power') || t.includes('energy')) {
-    icon = Zap
-  } else if (t.includes('grocery') || t.includes('groceries') || category.toLowerCase() === 'food') {
-    icon = ShoppingBag
-  } else if (category.toLowerCase() === 'bills' || t.includes('bill')) {
-    icon = Home
-  } else if (category.toLowerCase() === 'subscriptions') {
-    icon = Monitor
-  }
-
-  const colorMatch = style.text.match(/text-([a-z]+)-\d+/)
-  const cName = colorMatch ? colorMatch[1] : 'slate'
-
-  return { 
-    icon, 
-    color: style.text, 
-    bg: `bg-gradient-to-br from-${cName}-500/20 to-${cName}-500/5`, 
-    border: `border-${cName}-500/20` 
-  }
-}
 
 export default function SubscriptionsView({
   displayExpenses = [],
@@ -71,10 +27,16 @@ export default function SubscriptionsView({
         const txDate = new Date(item.date || Date.now())
         const now = new Date()
         const billingDay = txDate.getDate()
-        
-        let nextBilling = new Date(now.getFullYear(), now.getMonth(), billingDay)
+        // Clamp to the last day of the target month so a billing day of
+        // 29/30/31 doesn't overflow into the following month (e.g. Jan 31 -> Mar 3)
+        const safeMonthDate = (year, month, day) => {
+          const lastDay = new Date(year, month + 1, 0).getDate()
+          return new Date(year, month, Math.min(day, lastDay))
+        }
+
+        let nextBilling = safeMonthDate(now.getFullYear(), now.getMonth(), billingDay)
         if (nextBilling < now) {
-          nextBilling = new Date(now.getFullYear(), now.getMonth() + 1, billingDay)
+          nextBilling = safeMonthDate(now.getFullYear(), now.getMonth() + 1, billingDay)
         }
 
         const diffTime = nextBilling.getTime() - now.getTime()
@@ -83,7 +45,7 @@ export default function SubscriptionsView({
         return {
           ...item,
           amount: Number(item.amount) || 0,
-          nextBillingDate: nextBilling.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }),
+          nextBillingDate: nextBilling.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
           daysUntilRenewal: diffDays,
           billingDay
         }
@@ -102,87 +64,105 @@ export default function SubscriptionsView({
   }, [recurringSubscriptions])
 
   return (
-    <div className="space-y-6 md:space-y-8">
-      {/* Top Recurring Radar KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
-        {/* Monthly Recurring Burn */}
-        <div className="finance-card p-5 sm:p-6 lg:p-7">
+    <div className="space-y-6">
+      {/* Top Recurring KPI Cards (Matching Overview design system) */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* Monthly Subscription Costs */}
+        <div className="bg-surface-1 border border-border-default rounded-xl p-5 shadow-elevation-sm">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-semibold uppercase tracking-[0.06em] text-slate-500">Monthly Subscription Costs</span>
-            <div className="p-1 rounded bg-slate-800 text-blue-400">
+            <span className="text-[11px] font-semibold uppercase tracking-[0.06em] text-text-secondary">
+              Monthly Subscription Costs
+            </span>
+            <div className="p-1.5 rounded-lg bg-surface-2 border border-border-default/60 text-blue-400">
               <Radio className="h-4 w-4" />
             </div>
           </div>
-          <p className="text-[20px] sm:text-[26px] font-semibold text-white font-mono-nums mt-2 leading-tight">
+          <p className="text-[22px] sm:text-[26px] font-bold text-white font-mono mt-2 leading-tight">
             <AnimatedCounter value={monthlyBurn} prefix={currencySymbol} />
           </p>
-          <p className="text-xs text-slate-400 font-normal mt-0.5">Recurring commitments / month</p>
+          <p className="text-xs text-text-secondary font-normal mt-0.5">
+            Recurring monthly commitments
+          </p>
         </div>
 
         {/* Projected Annual Burn */}
-        <div className="finance-card p-5 sm:p-6 lg:p-7">
+        <div className="bg-surface-1 border border-border-default rounded-xl p-5 shadow-elevation-sm">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-semibold uppercase tracking-[0.06em] text-slate-500">Annual Projected Costs</span>
-            <div className="p-1 rounded bg-slate-800 text-slate-400">
+            <span className="text-[11px] font-semibold uppercase tracking-[0.06em] text-text-secondary">
+              Annual Projected Costs
+            </span>
+            <div className="p-1.5 rounded-lg bg-surface-2 border border-border-default/60 text-text-secondary">
               <Clock className="h-4 w-4" />
             </div>
           </div>
-          <p className="text-[20px] sm:text-[26px] font-semibold text-slate-200 font-mono-nums mt-2 leading-tight">
+          <p className="text-[22px] sm:text-[26px] font-bold text-white font-mono mt-2 leading-tight">
             <AnimatedCounter value={annualBurn} prefix={currencySymbol} />
           </p>
-          <p className="text-xs text-slate-400 font-normal mt-0.5">12-month recurring projection</p>
+          <p className="text-xs text-text-secondary font-normal mt-0.5">
+            12-month recurring projection
+          </p>
         </div>
 
         {/* Imminent Renewals Alert */}
-        <div className="finance-card p-5 sm:p-6 lg:p-7">
+        <div className="bg-surface-1 border border-border-default rounded-xl p-5 shadow-elevation-sm">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-semibold uppercase tracking-[0.06em] text-slate-500">Renewals in &le; 3 Days</span>
-            <div className={`p-1 rounded ${imminentRenewals.length > 0 ? 'bg-red-500/10 text-red-400' : 'bg-slate-800 text-slate-400'}`}>
+            <span className="text-[11px] font-semibold uppercase tracking-[0.06em] text-text-secondary">
+              Renewals in &le; 3 Days
+            </span>
+            <div className={`p-1.5 rounded-lg border ${
+              imminentRenewals.length > 0 
+                ? 'bg-rose-950/40 border-rose-800/40 text-rose-400' 
+                : 'bg-surface-2 border-border-default/60 text-text-secondary'
+            }`}>
               <Bell className="h-4 w-4" />
             </div>
           </div>
-          <p className={`text-[20px] sm:text-[26px] font-semibold font-mono-nums mt-2 leading-tight ${imminentRenewals.length > 0 ? 'text-red-400' : 'text-slate-200'}`}>
+          <p className={`text-[22px] sm:text-[26px] font-bold font-mono mt-2 leading-tight ${
+            imminentRenewals.length > 0 ? 'text-rose-400' : 'text-white'
+          }`}>
             {imminentRenewals.length}
           </p>
-          <p className="text-xs text-slate-400 font-normal mt-0.5">
-            {imminentRenewals.length > 0 ? "Upcoming renewals requiring funds" : "No renewals in next 72 hours"}
+          <p className="text-xs text-text-secondary font-normal mt-0.5">
+            {imminentRenewals.length > 0 ? "Upcoming renewals requiring funds" : "No renewals due in next 72h"}
           </p>
         </div>
       </div>
 
       {/* Imminent Alert Notice */}
       {imminentRenewals.length > 0 && (
-        <div className="p-4 sm:p-5 rounded-lg bg-red-500/10 border border-red-500/20 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2.5">
-            <AlertTriangle className="h-4 w-4 text-red-400 shrink-0" />
+        <div className="p-4 rounded-xl bg-rose-950/30 border border-rose-800/40 flex items-center justify-between gap-3 shadow-elevation-sm">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-rose-900/30 border border-rose-800/40 text-rose-400">
+              <AlertTriangle className="h-4 w-4 shrink-0" />
+            </div>
             <div>
-              <p className="text-xs font-semibold text-red-300">
+              <p className="text-xs font-semibold text-rose-400">
                 Notice: {imminentRenewals.length} subscription{imminentRenewals.length > 1 ? 's' : ''} renew within 3 days
               </p>
-              <p className="text-xs text-red-300/80 font-normal">
-                Total debit: {currencySymbol}{formatNumber(imminentRenewals.reduce((a, b) => a + b.amount, 0), currencySymbol)}
+              <p className="text-xs text-text-primary font-normal mt-0.5">
+                Total debit: <span className="text-white font-mono font-semibold">{currencySymbol}{formatNumber(imminentRenewals.reduce((a, b) => a + b.amount, 0), currencySymbol)}</span>
               </p>
             </div>
           </div>
         </div>
       )}
 
-      {/* Subscriptions List */}
-      <div className="finance-card p-5 sm:p-6 lg:p-7">
-        <div className="flex items-center justify-between pb-4 border-b border-slate-800 mb-6">
+      {/* Active Subscriptions Grid Card */}
+      <div className="bg-surface-1 border border-border-default rounded-xl p-5 sm:p-6 shadow-elevation-sm">
+        <div className="flex items-center justify-between pb-4 border-b border-border-subtle mb-5">
           <div>
-            <h2 className="text-[19px] font-bold text-white tracking-tight flex items-center gap-2">
-              <CreditCard className="h-4 w-4 text-slate-400" />
+            <h2 className="text-[17px] font-bold text-white tracking-tight flex items-center gap-2">
+              <CreditCard className="h-4 w-4 text-text-secondary" />
               <span>Active Subscriptions ({recurringSubscriptions.length})</span>
             </h2>
-            <p className="text-[13px] text-slate-400 font-medium mt-1">
+            <p className="text-xs text-text-secondary font-normal mt-0.5">
               Automated renewal detection and cycle countdown
             </p>
           </div>
 
           <button
             onClick={openAddModal}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold transition-colors cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white text-xs font-semibold transition-colors shadow-elevation-sm cursor-pointer"
           >
             <Plus className="h-3.5 w-3.5" />
             <span>Add Recurring Bill</span>
@@ -190,10 +170,10 @@ export default function SubscriptionsView({
         </div>
 
         {recurringSubscriptions.length === 0 ? (
-          <div className="py-12 text-center text-slate-500 text-xs space-y-1.5">
-            <Radio className="h-6 w-6 text-slate-600 mx-auto" />
-            <p className="font-semibold text-slate-400">No recurring subscriptions tracked</p>
-            <p className="text-slate-500 max-w-sm mx-auto">
+          <div className="py-14 text-center text-text-muted text-xs space-y-1.5">
+            <Radio className="h-6 w-6 text-text-disabled mx-auto" />
+            <p className="font-semibold text-text-primary">No active subscriptions tracked</p>
+            <p className="text-text-muted max-w-sm mx-auto">
               When adding transactions, mark "Recurring" or type e.g. "Netflix monthly 15.99 subscription" in Quick Add to track them here.
             </p>
           </div>
@@ -202,70 +182,59 @@ export default function SubscriptionsView({
             {recurringSubscriptions.map((sub) => {
               const days = sub.daysUntilRenewal
               const isUrgent = days <= 3
-              const isMedium = days > 3 && days <= 14
-              const isMore = days > 14
-              
-              const identity = getVisualIdentity(sub.title, sub.category)
-
-              let statusDotColor = 'bg-slate-600'
-              let statusDateColor = 'text-slate-400'
-              let statusTimeColor = 'text-slate-500 font-medium'
-              let cardBgColor = 'bg-slate-900/40 border-slate-800/60'
-
-              if (isUrgent) {
-                statusDotColor = 'bg-red-400 animate-pulse'
-                statusDateColor = 'text-red-400 font-medium'
-                statusTimeColor = 'text-red-500/80 font-medium'
-                cardBgColor = 'bg-red-500/5 border-red-500/30'
-              } else if (isMedium) {
-                statusDotColor = 'bg-blue-400'
-                statusDateColor = 'text-blue-400 font-medium'
-                statusTimeColor = 'text-blue-500/80 font-medium'
-              } else if (isMore) {
-                statusDotColor = 'bg-emerald-400'
-                statusDateColor = 'text-emerald-400 font-medium'
-                statusTimeColor = 'text-emerald-500/80 font-medium'
-              }
+              const brand = getSubscriptionBrand(sub.title, sub.category)
+              const categoryStyle = getCategoryStyle(sub.category)
 
               return (
                 <div
-                  key={sub._id}
-                  className={`p-5 sm:p-6 rounded-xl border transition-colors ${cardBgColor} flex flex-col justify-between min-h-[140px]`}
+                  key={sub._id || sub.id}
+                  className="bg-surface-inset border border-border-subtle hover:border-border-strong rounded-xl p-4 sm:p-5 transition-colors flex flex-col justify-between min-h-[145px]"
                 >
-                  {/* Header */}
-                  <div className="flex items-start gap-3.5">
-                    <div className={`h-11 w-11 rounded-xl flex items-center justify-center border shrink-0 ${identity.bg} ${identity.border} ${identity.color}`}>
-                      <identity.icon className="h-5 w-5" />
-                    </div>
-                    <div className="min-w-0 flex-1 pt-0.5">
-                      <h3 className="text-[15px] font-semibold text-slate-100 truncate leading-snug">{sub.title}</h3>
-                      <div className="flex items-center gap-1.5 mt-1">
-                        <span className={`text-[11px] font-medium ${identity.color} opacity-80`}>
-                          {sub.category}
-                        </span>
+                  {/* Top Row: Logo + Title/Category + Recurring Badge */}
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-center gap-3 min-w-0">
+                      {/* Logo Container (matches standard squircle container) */}
+                      <div className="h-10 w-10 rounded-xl bg-surface-2 border border-border-default/60 flex items-center justify-center shrink-0">
+                        {brand.icon}
+                      </div>
+
+                      <div className="min-w-0">
+                        <h3 className="text-sm font-semibold text-white truncate">
+                          {sub.title}
+                        </h3>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className={`px-2 py-0.5 rounded text-[11px] font-medium border ${categoryStyle.badgeBg} ${categoryStyle.text} ${categoryStyle.border}`}>
+                            {sub.category}
+                          </span>
+                        </div>
                       </div>
                     </div>
+
+                    {/* Recurring Badge (matches Recent Transactions badge) */}
+                    <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-semibold uppercase tracking-wider bg-surface-2 border border-border-default/60 text-text-primary shrink-0">
+                      RECURRING
+                    </span>
                   </div>
 
-                  {/* Spacer and Bottom */}
-                  <div className="mt-6 pt-4 border-t border-slate-800/50 flex flex-wrap items-end justify-between gap-3">
-                    {/* Renewal Info */}
+                  {/* Bottom Row: Renewal Countdown & Amount */}
+                  <div className="mt-4 pt-3 border-t border-border-subtle flex items-center justify-between gap-2">
+                    {/* Renewal Timing */}
                     <div className="flex items-center gap-1.5 text-xs">
-                      <div className={`h-1.5 w-1.5 rounded-full ${statusDotColor}`} />
-                      <span className={statusDateColor}>
+                      <div className={`h-1.5 w-1.5 rounded-full ${isUrgent ? 'bg-rose-400 animate-pulse' : 'bg-emerald-400'}`} />
+                      <span className={isUrgent ? 'text-rose-400 font-medium' : 'text-text-secondary'}>
                         {sub.nextBillingDate}
                       </span>
-                      <span className={statusTimeColor}>
+                      <span className={isUrgent ? 'text-rose-400/80 font-medium' : 'text-text-muted'}>
                         · {days === 0 ? "Today" : `In ${days}d`}
                       </span>
                     </div>
 
                     {/* Amount */}
                     <div className="flex items-baseline gap-1">
-                      <span className="text-[19px] font-semibold text-white font-mono-nums tracking-tight">
-                        {currencySymbol}{formatNumber(sub.amount, currencySymbol)}
+                      <span className="text-[18px] font-bold text-white font-mono">
+                        {currencySymbol}{formatNumber(sub.amount, currencySymbol, 2, 2)}
                       </span>
-                      <span className="text-[11px] text-slate-500 font-medium">/month</span>
+                      <span className="text-xs text-text-secondary font-normal">/month</span>
                     </div>
                   </div>
                 </div>

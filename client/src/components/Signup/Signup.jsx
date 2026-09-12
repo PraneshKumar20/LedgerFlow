@@ -29,24 +29,24 @@ const Signup = () => {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-[#090d16] p-4">
-            <Card className="w-full max-w-md bg-[#0f1523] border border-slate-800 rounded-lg shadow-2xl">
+        <div className="min-h-screen flex items-center justify-center bg-background p-4">
+            <Card className="w-full max-w-md bg-surface-2 border border-border-default rounded-modal shadow-elevation-modal">
                 <CardHeader className="space-y-2 text-center pb-4">
                     <img src="/ledgerflow-logo.png?v=2" alt="LedgerFlow Logo" className="h-12 w-12 object-contain mx-auto mb-1 drop-shadow-sm" />
-                    <CardTitle className="text-xl font-bold tracking-tight text-white">Join LedgerFlow</CardTitle>
-                    <CardDescription className="text-slate-400 text-xs">
+                    <CardTitle className="text-xl font-bold tracking-tight text-text-primary">Join LedgerFlow</CardTitle>
+                    <CardDescription className="text-text-secondary text-xs">
                         Start managing your wealth, envelopes, and bills today
                     </CardDescription>
                 </CardHeader>
                 <form onSubmit={submitHandler}>
                     <CardContent className="space-y-4">
                         {error && (
-                            <div className="p-3 text-xs font-medium text-rose-400 bg-rose-500/10 rounded-md border border-rose-500/20">
+                            <div className="p-3 text-xs font-medium text-negative bg-negative/10 rounded-control border border-negative/20">
                                 {error}
                             </div>
                         )}
                         <div className="space-y-1.5">
-                            <Label htmlFor="name" className="text-xs text-slate-300 font-medium">Full Name</Label>
+                            <Label htmlFor="name" className="text-xs text-text-secondary font-medium">Full Name</Label>
                             <Input
                                 id="name"
                                 type="text"
@@ -54,11 +54,11 @@ const Signup = () => {
                                 value={name}
                                 onChange={(e) => setName(e.target.value)}
                                 required
-                                className="bg-slate-900 border-slate-700 text-white text-xs placeholder:text-slate-500 rounded-md focus:border-blue-500"
+                                className="bg-surface-3 border-border-default text-text-primary text-xs placeholder:text-text-muted rounded-control focus-ring"
                             />
                         </div>
                         <div className="space-y-1.5">
-                            <Label htmlFor="email" className="text-xs text-slate-300 font-medium">Email Address</Label>
+                            <Label htmlFor="email" className="text-xs text-text-secondary font-medium">Email Address</Label>
                             <Input
                                 id="email"
                                 type="email"
@@ -66,11 +66,11 @@ const Signup = () => {
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 required
-                                className="bg-slate-900 border-slate-700 text-white text-xs placeholder:text-slate-500 rounded-md focus:border-blue-500"
+                                className="bg-surface-3 border-border-default text-text-primary text-xs placeholder:text-text-muted rounded-control focus-ring"
                             />
                         </div>
                         <div className="space-y-1.5">
-                            <Label htmlFor="password" className="text-xs text-slate-300 font-medium">Password</Label>
+                            <Label htmlFor="password" className="text-xs text-text-secondary font-medium">Password</Label>
                             <Input
                                 id="password"
                                 type="password"
@@ -78,20 +78,20 @@ const Signup = () => {
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 required
-                                className="bg-slate-900 border-slate-700 text-white text-xs placeholder:text-slate-500 rounded-md focus:border-blue-500"
+                                className="bg-surface-3 border-border-default text-text-primary text-xs placeholder:text-text-muted rounded-control focus-ring"
                             />
                         </div>
                     </CardContent>
                     <CardFooter className="flex flex-col space-y-4 pt-2">
-                        <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-500 text-white font-medium text-xs rounded-md transition-colors">
+                        <Button type="submit" className="w-full bg-brand hover:bg-brand-hover active:bg-brand-active text-white font-medium text-xs rounded-control transition-colors shadow-elevation-sm">
                             Complete Registration
                         </Button>
-                        <div className="text-center text-xs text-slate-400">
+                        <div className="text-center text-xs text-text-secondary">
                             Already have an account?{" "}
                             <button
                                 type="button"
                                 onClick={() => navigate("/login")}
-                                className="text-blue-400 hover:text-blue-300 font-medium underline underline-offset-4 transition-colors"
+                                className="text-brand hover:text-brand-hover font-medium underline underline-offset-4 transition-colors"
                             >
                                 Sign in
                             </button>

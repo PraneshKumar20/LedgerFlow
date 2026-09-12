@@ -33,31 +33,31 @@ const Login = () => {
     const handleGuestLogin = () => {
         localStorage.setItem("user", JSON.stringify({
             name: "Demo Explorer",
-            email: "demo@expensetracker.io",
+            email: "guest@ledgerflow.app",
             isGuest: true
         }));
         navigate("/expenses");
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-[#090d16] p-4">
-            <Card className="w-full max-w-md bg-[#0f1523] border border-slate-800 rounded-lg shadow-2xl">
+        <div className="min-h-screen flex items-center justify-center bg-background p-4">
+            <Card className="w-full max-w-md bg-surface-2 border border-border-default rounded-modal shadow-elevation-modal">
                 <CardHeader className="space-y-2 text-center pb-4">
                     <img src="/ledgerflow-logo.png?v=2" alt="LedgerFlow Logo" className="h-12 w-12 object-contain mx-auto mb-1 drop-shadow-sm" />
-                    <CardTitle className="text-xl font-bold tracking-tight text-white">Sign in to LedgerFlow</CardTitle>
-                    <CardDescription className="text-slate-400 text-xs">
+                    <CardTitle className="text-xl font-bold tracking-tight text-text-primary">Sign in to LedgerFlow</CardTitle>
+                    <CardDescription className="text-text-secondary text-xs">
                         Access your wealth analytics, category envelopes, and financial command
                     </CardDescription>
                 </CardHeader>
                 <form onSubmit={submitHandler}>
                     <CardContent className="space-y-4">
                         {error && (
-                            <div className="p-3 text-xs font-medium text-rose-400 bg-rose-500/10 rounded-md border border-rose-500/20">
+                            <div className="p-3 text-xs font-medium text-negative bg-negative/10 rounded-control border border-negative/20">
                                 {error}
                             </div>
                         )}
                         <div className="space-y-1.5">
-                            <Label htmlFor="email" className="text-xs text-slate-300 font-medium">Email Address</Label>
+                            <Label htmlFor="email" className="text-xs text-text-secondary font-medium">Email Address</Label>
                             <Input
                                 id="email"
                                 type="email"
@@ -65,11 +65,11 @@ const Login = () => {
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 required
-                                className="bg-slate-900 border-slate-700 text-white text-xs placeholder:text-slate-500 rounded-md focus:border-blue-500"
+                                className="bg-surface-3 border-border-default text-text-primary text-xs placeholder:text-text-muted rounded-control focus-ring"
                             />
                         </div>
                         <div className="space-y-1.5">
-                            <Label htmlFor="password" className="text-xs text-slate-300 font-medium">Password</Label>
+                            <Label htmlFor="password" className="text-xs text-text-secondary font-medium">Password</Label>
                             <Input
                                 id="password"
                                 type="password"
@@ -77,21 +77,21 @@ const Login = () => {
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 required
-                                className="bg-slate-900 border-slate-700 text-white text-xs placeholder:text-slate-500 rounded-md focus:border-blue-500"
+                                className="bg-surface-3 border-border-default text-text-primary text-xs placeholder:text-text-muted rounded-control focus-ring"
                             />
                         </div>
                     </CardContent>
                     <CardFooter className="flex flex-col space-y-3 pt-2">
-                        <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-500 text-white font-medium text-xs rounded-md transition-colors">
+                        <Button type="submit" className="w-full bg-brand hover:bg-brand-hover active:bg-brand-active text-white font-medium text-xs rounded-control transition-colors shadow-elevation-sm">
                             Sign In
                         </Button>
 
                         <div className="relative w-full py-1">
                             <div className="absolute inset-0 flex items-center">
-                                <div className="w-full border-t border-slate-800"></div>
+                                <div className="w-full border-t border-border-default"></div>
                             </div>
                             <div className="relative flex justify-center text-[10px] uppercase">
-                                <span className="bg-[#0f1523] px-2 text-slate-500 font-mono-nums">Or explore instantly</span>
+                                <span className="bg-surface-2 px-2 text-text-muted font-mono-nums">Or explore instantly</span>
                             </div>
                         </div>
 
@@ -99,17 +99,17 @@ const Login = () => {
                             type="button" 
                             onClick={handleGuestLogin}
                             variant="outline" 
-                            className="w-full border-slate-700 bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white text-xs font-medium rounded-md transition-colors"
+                            className="w-full border-border-default bg-surface-3 hover:bg-surface-hover text-text-secondary hover:text-text-primary text-xs font-medium rounded-control transition-colors"
                         >
                             Continue as Demo Guest
                         </Button>
 
-                        <div className="text-center text-xs text-slate-400 pt-2">
+                        <div className="text-center text-xs text-text-secondary pt-2">
                             Don't have an account?{" "}
                             <button
                                 type="button"
                                 onClick={() => navigate("/signup")}
-                                className="text-blue-400 hover:text-blue-300 font-medium underline underline-offset-4 transition-colors"
+                                className="text-brand hover:text-brand-hover font-medium underline underline-offset-4 transition-colors"
                             >
                                 Sign up
                             </button>

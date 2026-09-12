@@ -1,54 +1,77 @@
-export const CATEGORY_COLORS = {
+export const CANONICAL_CATEGORIES = {
   Travel: {
-    base: "#6366f1", // indigo-500
-    badge: "bg-indigo-500/10 text-indigo-400 border-indigo-500/20",
-    text: "text-indigo-400",
-    bg: "bg-indigo-500"
-  },
-  Subscriptions: {
-    base: "#0ea5e9", // sky-500 (Cyan/Blue)
-    badge: "bg-sky-500/10 text-sky-400 border-sky-500/20",
-    text: "text-sky-400",
-    bg: "bg-sky-500"
+    base: "#8B5CF6",
+    bg: "bg-purple-500",
+    badgeBg: "bg-purple-500/10",
+    text: "text-purple-400",
+    border: "border-purple-500/20",
   },
   Shopping: {
-    base: "#10b981", // emerald-500
-    badge: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
+    base: "#10B981",
+    bg: "bg-emerald-500",
+    badgeBg: "bg-emerald-500/10",
     text: "text-emerald-400",
-    bg: "bg-emerald-500"
+    border: "border-emerald-500/20",
   },
   Food: {
-    base: "#f43f5e", // rose-500
-    badge: "bg-rose-500/10 text-rose-400 border-rose-500/20",
+    base: "#F43F5E",
+    bg: "bg-rose-500",
+    badgeBg: "bg-rose-500/10",
     text: "text-rose-400",
-    bg: "bg-rose-500"
+    border: "border-rose-500/20",
   },
   Bills: {
-    base: "#f59e0b", // amber-500
-    badge: "bg-amber-500/10 text-amber-400 border-amber-500/20",
+    base: "#F59E0B",
+    bg: "bg-amber-500",
+    badgeBg: "bg-amber-500/10",
     text: "text-amber-400",
-    bg: "bg-amber-500"
+    border: "border-amber-500/20",
   },
   Entertainment: {
-    base: "#8b5cf6", // violet-500
-    badge: "bg-violet-500/10 text-violet-400 border-violet-500/20",
-    text: "text-violet-400",
-    bg: "bg-violet-500"
+    base: "#C084FC",
+    bg: "bg-purple-400",
+    badgeBg: "bg-purple-400/10",
+    text: "text-purple-300",
+    border: "border-purple-400/20",
+  },
+  Subscriptions: {
+    base: "#38BDF8",
+    bg: "bg-sky-500",
+    badgeBg: "bg-sky-500/10",
+    text: "text-sky-400",
+    border: "border-sky-500/20",
   },
   Salary: {
-    base: "#10b981", // emerald-500 (Income)
-    badge: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
+    base: "#10B981",
+    bg: "bg-emerald-500",
+    badgeBg: "bg-emerald-500/10",
     text: "text-emerald-400",
-    bg: "bg-emerald-500"
+    border: "border-emerald-500/20",
   },
   Other: {
-    base: "#64748b", // slate-500
-    badge: "bg-slate-800 text-slate-400 border-slate-700",
-    text: "text-slate-400",
-    bg: "bg-slate-500"
-  }
-};
+    base: "#6366F1",
+    bg: "bg-indigo-500",
+    badgeBg: "bg-indigo-500/10",
+    text: "text-indigo-400",
+    border: "border-indigo-500/20",
+  },
+}
+
+// Category badge styles are strictly derived from the canonical category definition
+export const CATEGORY_COLORS = Object.fromEntries(
+  Object.entries(CANONICAL_CATEGORIES).map(([cat, def]) => [
+    cat,
+    {
+      base: def.base,
+      bg: def.bg,
+      badgeBg: def.badgeBg,
+      text: def.text,
+      border: def.border,
+      badge: `${def.badgeBg} ${def.text} ${def.border}`,
+    },
+  ])
+)
 
 export const getCategoryStyle = (categoryName) => {
-  return CATEGORY_COLORS[categoryName] || CATEGORY_COLORS.Other;
-};
+  return CATEGORY_COLORS[categoryName] || CATEGORY_COLORS.Other
+}
